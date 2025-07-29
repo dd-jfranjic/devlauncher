@@ -1,0 +1,58 @@
+{
+  "name": "devlauncher",
+  "version": "1.0.0",
+  "description": "GUI tool for managing Claude Code projects with Docker MCP integration",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron:dev": "set NODE_ENV=development && electron . --dev",
+    "build:electron": "tsc electron/main.ts --outDir electron --esModuleInterop",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "electron",
+    "claude",
+    "docker",
+    "mcp",
+    "devtools"
+  ],
+  "author": "Datadox",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.18",
+    "@heroicons/react": "^2.1.1",
+    "clsx": "^2.1.1",
+    "electron-store": "^8.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.3",
+    "xterm": "^5.3.0",
+    "xterm-addon-fit": "^0.8.0"
+  }
+}

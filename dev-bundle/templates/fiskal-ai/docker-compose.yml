@@ -1,0 +1,128 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: {{PROJECT_NAME}}_postgres
+    environment:
+      POSTGRES_DB: fiskal_db
+      POSTGRES_USER: fiskal_user
+      POSTGRES_PASSWORD: secure_password_123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "{{DB_PORT}}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fiskal_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7.2-alpine
+    container_name: {{PROJECT_NAME}}_redis
+    ports:
+      - "{{REDIS_PORT}}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NestJS Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: {{PROJECT_NAME}}_backend
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "{{BACKEND_PORT}}:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://fiskal_user:secure_password_123@postgres:5432/fiskal_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run start:dev
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: {{PROJECT_NAME}}_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "{{WP_PORT}}:3000"  # Using WP_PORT for main app port
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://backend:3000
+    depends_on:
+      - backend
+    command: npm run dev
+
+  # Adminer (Database Management)
+  adminer:
+    image: adminer:latest
+    container_name: {{PROJECT_NAME}}_adminer
+    ports:
+      - "{{PMA_PORT}}:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+      - ADMINER_DEFAULT_DB_DRIVER=pgsql
+      - ADMINER_DEFAULT_DB_SERVER=postgres
+      - ADMINER_DEFAULT_DB_NAME=fiskal_db
+      - ADMINER_DEFAULT_DB_USER=fiskal_user
+      - ADMINER_DEFAULT_DB_PASSWORD=secure_password_123
+    depends_on:
+      - postgres
+
+  # Mailpit (Email Testing)
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: {{PROJECT_NAME}}_mailpit
+    ports:
+      - "{{MAIL_PORT}}:8025"  # Web UI
+      - "{{SMTP_PORT}}:1025"  # SMTP
+    environment:
+      - MP_MAX_MESSAGES=5000
+      - MP_DATABASE=/data/mailpit.db
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+    volumes:
+      - mailpit_data:/data
+
+  # Browser Context Server (for Claude Code)
+  browser-context:
+    image: browserless/chrome:latest
+    container_name: {{PROJECT_NAME}}_browser_context
+    ports:
+      - "{{BROWSER_PORT}}:3000"
+    environment:
+      - MAX_CONCURRENT_SESSIONS=10
+      - PREBOOT_CHROME=true
+      - CONNECTION_TIMEOUT=180000
+    shm_size: '2gb'
+
+volumes:
+  postgres_data:
+  redis_data:
+  mailpit_data:
+
+networks:
+  default:
+    name: devlauncher-network
+    external: true

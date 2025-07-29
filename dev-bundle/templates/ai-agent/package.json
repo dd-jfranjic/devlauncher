@@ -1,0 +1,21 @@
+{
+  "name": "{{PROJECT_NAME}}-agent",
+  "version": "1.0.0",
+  "description": "AI Agent powered by Claude",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "chat": "node chat.js",
+    "batch": "node batch.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.18.0",
+    "dotenv": "^16.3.1",
+    "inquirer": "^9.2.12",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

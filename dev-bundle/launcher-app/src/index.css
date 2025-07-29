@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Scrollbar Styles */
+@layer utilities {
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gradient-to-b from-purple-400 to-pink-400 dark:from-purple-600 dark:to-pink-600;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gradient-to-b from-purple-500 to-pink-500 dark:from-purple-700 dark:to-pink-700;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.purple.400') theme('colors.gray.100');
+  }
+
+  .dark * {
+    scrollbar-color: theme('colors.purple.600') theme('colors.gray.800');
+  }
+
+  /* Hide scrollbar for specific elements if needed */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

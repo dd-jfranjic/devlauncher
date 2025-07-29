@@ -1,0 +1,36 @@
+ISPRAVNE KOMANDE ZA PLAYWRIGHT MCP
+===================================
+
+Ti trenutno imaš:
+playwright: npx @executeautomation/playwright-mcp - ✗ Failed to connect
+
+Ovo je KRIVO! @executeautomation/playwright-mcp NIJE službeni paket.
+
+ISPRAVNO RJEŠENJE:
+==================
+
+1. Otvori novi PowerShell
+2. Idi u svoj projekt:
+   cd C:\Users\jfran\Documents\dev\fiskal-ai
+
+3. Ukloni postojeći (pogrešan) Playwright MCP:
+   claude mcp remove playwright
+
+4. Dodaj ISPRAVNI Playwright MCP (točno kako si našao u dokumentaciji):
+   claude mcp add playwright "npx @playwright/mcp@latest"
+
+5. Izađi iz Claude (Ctrl+C) i pokreni ponovno:
+   claude
+
+6. Provjeri status:
+   claude mcp list
+
+Sada bi trebalo pokazati:
+playwright: npx @playwright/mcp@latest - ✓ Connected
+
+NAPOMENA:
+=========
+Komanda koju si našao je 100% točna:
+claude mcp add playwright npx @playwright/mcp@latest
+
+Ali možda trebaš staviti "npx @playwright/mcp@latest" u navodnike ovisno o verziji Claude CLI-ja.

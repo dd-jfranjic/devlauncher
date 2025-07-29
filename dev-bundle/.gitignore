@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Electron
+out/
+.webpack/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+*-data/
+
+# Project files
+launcher-app/projects/
+core-mcp-stack/projects/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

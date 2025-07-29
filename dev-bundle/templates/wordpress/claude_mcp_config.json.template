@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "wordpress": {
+      "command": "node",
+      "args": [
+        "{{PROJECT_PATH}}\\app\\public\\node_modules\\@automattic\\wordpress-mcp\\build\\index.js"
+      ],
+      "env": {
+        "WORDPRESS_URL": "http://localhost:{{WP_PORT}}",
+        "WORDPRESS_USERNAME": "admin",
+        "WORDPRESS_PASSWORD": "admin123"
+      }
+    }
+  }
+}

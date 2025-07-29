@@ -1,0 +1,65 @@
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: devlauncher-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dev
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpass
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: unless-stopped
+
+  redis-db:
+    image: redis:alpine
+    container_name: devlauncher-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: devlauncher-phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql-db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - mysql-db
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: devlauncher-mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    restart: unless-stopped
+
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: devlauncher-filebrowser
+    ports:
+      - "8090:80"
+    volumes:
+      - ../launcher-app:/srv
+      - filebrowser-data:/config
+    environment:
+      - FB_NOAUTH=true
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  redis-data:
+  filebrowser-data:
+
+networks:
+  default:
+    name: devlauncher-network

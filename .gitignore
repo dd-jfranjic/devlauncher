@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Production
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Batch files and setup scripts
+*.bat
+setup-*
+git-*-setup.*
+
+# PowerShell scripts (optional - remove if you want to commit them)
+*.ps1
+
+# Temporary files
+*.tmp
+nul
+$null
+
+# Electron
+electron-builder.yml
+dist_electron/

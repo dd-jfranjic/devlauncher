@@ -1,0 +1,18 @@
+[
+  {
+    "id": "mysql-db",
+    "name": "MySQL Database",
+    "url": "mysql://devuser:devpass@localhost:3306/dev",
+    "transport": "database",
+    "scope": "user",
+    "description": "MySQL database for development"
+  },
+  {
+    "id": "redis-db",
+    "name": "Redis Cache",
+    "url": "redis://localhost:6379",
+    "transport": "cache",
+    "scope": "user",
+    "description": "Redis cache for session and data caching"
+  }
+]
