@@ -84,3 +84,20 @@ model Settings {
 
   @@index([key])
 }
+
+model SystemService {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // 'archon-global'
+  status      String   @default("stopped") // 'running', 'stopped', 'error', 'starting', 'stopping'
+  ports       String   // JSON: { ui: 4000, server: 4001, mcp: 4002, agents: 4003 }
+  config      String   // JSON: Supabase credentials, API keys
+  version     String?  // Archon version
+  lastError   String?  // Last error message if any
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+  @@index([type])
+  @@index([status])
+}

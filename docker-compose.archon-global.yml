@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # Archon Server - Main backend service
+  archon-global-server:
+    build:
+      context: ./archon
+      dockerfile: Dockerfile.server
+    container_name: archon-global-server
+    ports:
+      - "127.0.0.1:4001:8181"
+    environment:
+      - NODE_ENV=production
+      - SUPABASE_URL=${GLOBAL_ARCHON_SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${GLOBAL_ARCHON_SUPABASE_KEY}
+      - ARCHON_MODE=global
+      - LOG_LEVEL=info
+    volumes:
+      - archon-global-data:/app/data
+      - archon-global-logs:/app/logs
+    networks:
+      - archon-global
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8181/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Archon MCP - Model Context Protocol service  
+  archon-global-mcp:
+    build:
+      context: ./archon
+      dockerfile: Dockerfile.mcp
+    container_name: archon-global-mcp
+    ports:
+      - "127.0.0.1:4002:8051"
+    environment:
+      - ARCHON_SERVER_URL=http://archon-global-server:8181
+      - MCP_MODE=global
+      - LOG_LEVEL=info
+    depends_on:
+      archon-global-server:
+        condition: service_healthy
+    networks:
+      - archon-global
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8051/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Archon Agents - PydanticAI agents service
+  archon-global-agents:
+    build:
+      context: ./archon
+      dockerfile: Dockerfile.agents
+    container_name: archon-global-agents
+    ports:
+      - "127.0.0.1:4003:8052"
+    environment:
+      - ARCHON_SERVER_URL=http://archon-global-server:8181
+      - OPENAI_API_KEY=${GLOBAL_ARCHON_OPENAI_KEY}
+      - GEMINI_API_KEY=${GLOBAL_ARCHON_GEMINI_KEY}
+      - AGENTS_MODE=global
+      - LOG_LEVEL=info
+    depends_on:
+      archon-global-server:
+        condition: service_healthy
+    networks:
+      - archon-global
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8052/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Archon UI - React frontend
+  archon-global-ui:
+    build:
+      context: ./archon
+      dockerfile: Dockerfile.frontend
+    container_name: archon-global-ui
+    ports:
+      - "127.0.0.1:4000:3737"
+    environment:
+      - REACT_APP_ARCHON_SERVER_URL=http://localhost:4001
+      - REACT_APP_MCP_SERVER_URL=http://localhost:4002
+      - REACT_APP_AGENTS_SERVER_URL=http://localhost:4003
+      - REACT_APP_MODE=global
+      - NODE_ENV=production
+    depends_on:
+      archon-global-server:
+        condition: service_healthy
+    networks:
+      - archon-global
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3737"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  archon-global-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/.devlauncher/archon/global/data
+  
+  archon-global-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/.devlauncher/archon/global/logs
+
+networks:
+  archon-global:
+    driver: bridge
+    name: archon-global-network
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.40.0.0/24
