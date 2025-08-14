@@ -20,6 +20,9 @@ interface McpServerConfig {
   requiresApiToken?: boolean;
   apiTokenEnvVar?: string;
   apiTokenPlaceholder?: string;
+  requiresManualSetup?: boolean;
+  setupInstructions?: string[];
+  notes?: string[];
   configTemplate: {
     command: string;
     args?: string[];
@@ -33,6 +36,20 @@ export class McpInstaller {
    */
   static async installForWSL(server: McpServerConfig, projectPath: string, apiToken?: string): Promise<void> {
     logger.info(`Installing ${server.id} for WSL project at ${projectPath}`);
+    
+    // Check if this server requires manual setup (like Chrome MCP)
+    if (server.requiresManualSetup) {
+      logger.info(`${server.id} requires manual setup - installing bridge component only`);
+      
+      // For Chrome MCP, install the bridge component
+      if (server.id === 'chrome-mcp') {
+        await this.installChromeMCPBridge(server, projectPath);
+        return;
+      } else {
+        logger.warn(`Unknown manual setup server: ${server.id}`);
+        throw new Error(`Manual setup required for ${server.id}. Please follow setup instructions.`);
+      }
+    }
     
     // For npm-based MCP servers that use npx, we don't need to install anything
     // npx will download and run the package on demand
@@ -174,6 +191,45 @@ export class McpInstaller {
     } catch (error: any) {
       logger.error(`Failed to remove MCP server:`, error);
       throw new Error(`Removal failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Install Chrome MCP Bridge component
+   */
+  static async installChromeMCPBridge(server: McpServerConfig, projectPath: string): Promise<void> {
+    logger.info(`Installing Chrome MCP Bridge for project at ${projectPath}`);
+    
+    try {
+      // Install the npm bridge component
+      const installCommand = `wsl.exe -d Ubuntu -u jfranjic bash -l -c "${server.installCommand}"`;
+      logger.info(`Installing bridge: ${installCommand}`);
+      
+      const { stdout, stderr } = await execAsync(installCommand, { timeout: 120000 });
+      if (stdout) logger.info(`Bridge install output: ${stdout}`);
+      if (stderr) logger.warn(`Bridge install warnings: ${stderr}`);
+      
+      // Configure Claude CLI to use HTTP connection to localhost:12306
+      logger.info(`Configuring Claude CLI for Chrome MCP Bridge`);
+      const serverId = server.id.replace('-mcp', '');
+      
+      // Use sse transport for HTTP connection to Chrome extension
+      const addCommand = `claude mcp add -s user ${serverId} --transport sse http://localhost:12306/sse`;
+      const wslCommand = `wsl.exe -d Ubuntu -u jfranjic bash -l -c "cd ${projectPath} && ${addCommand}"`;
+      logger.info(`Running: ${wslCommand}`);
+      
+      const configResult = await execAsync(wslCommand, { timeout: 10000 });
+      if (configResult.stdout) logger.info(`Chrome MCP config output: ${configResult.stdout}`);
+      if (configResult.stderr && !configResult.stderr.includes('Added')) {
+        logger.warn(`Chrome MCP config warnings: ${configResult.stderr}`);
+      }
+      
+      logger.info(`Chrome MCP Bridge configured successfully`);
+      logger.info(`Next steps: Install Chrome extension from ${server.repository}/releases`);
+      
+    } catch (error: any) {
+      logger.error(`Failed to install Chrome MCP Bridge:`, error);
+      throw new Error(`Chrome MCP Bridge installation failed: ${error.message}`);
     }
   }
 }

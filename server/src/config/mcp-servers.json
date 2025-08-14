@@ -188,6 +188,37 @@
         "command": "uvx",
         "args": ["docker-mcp"]
       }
+    },
+    {
+      "id": "chrome-mcp",
+      "name": "Chrome MCP Bridge",
+      "description": "Browser automation using existing Chrome session with 20+ tools",
+      "repository": "https://github.com/hangwin/mcp-chrome",
+      "type": "browser",
+      "icon": "🌐",
+      "installCommand": "npm install -g mcp-chrome-bridge",
+      "tested": false,
+      "wslSupported": true,
+      "windowsSupported": true,
+      "requiredTools": ["node", "npm", "chrome"],
+      "requiresManualSetup": true,
+      "setupInstructions": [
+        "1. Download Chrome extension from GitHub releases",
+        "2. Load unpacked extension in Chrome (Developer mode)",
+        "3. Install bridge: npm install -g mcp-chrome-bridge",
+        "4. Extension will run on http://localhost:12306"
+      ],
+      "configTemplate": {
+        "command": "mcp-chrome-bridge",
+        "args": ["--port", "12306"],
+        "env": {}
+      },
+      "notes": [
+        "Uses existing Chrome browser session",
+        "Preserves login states and cookies",
+        "Faster than headless browser automation",
+        "Requires Chrome extension installation"
+      ]
     }
   ]
 }
