@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./devlauncher.db"
+}
+
+model Project {
+  id            String          @id @default(uuid())
+  name          String
+  slug          String          @unique
+  type          String
+  location      String
+  paths         String          // JSON stored as string in SQLite
+  ports         String          // JSON stored as string in SQLite
+  dockerProject String
+  status        String          @default("stopped")
+  claudeCli     String          @default("{\"installed\":false}") // JSON
+  geminiCli     String          @default("{\"installed\":false}") // JSON
+  qwenCli       String          @default("{\"installed\":false}") // JSON
+  urlResolver   String?         // JSON
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  tasks         Task[]
+  ports_reserved PortReservation[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model PortReservation {
+  id         String   @id @default(uuid())
+  slug       String
+  template   String
+  portName   String
+  portNumber Int      @unique
+  createdAt  DateTime @default(now())
+
+  project    Project  @relation(fields: [slug], references: [slug], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([portNumber])
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  projectSlug String
+  type        String
+  status      String   @default("queued")
+  logPath     String
+  result      String?  // JSON
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project  @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
+
+  @@index([projectSlug])
+  @@index([status])
+  @@index([type])
+}
+
+model AuditLog {
+  id       String   @id @default(uuid())
+  ts       DateTime @default(now())
+  actor    String
+  action   String
+  params   String?  // JSON
+  result   String?  // JSON
+  
+  @@index([ts])
+  @@index([actor])
+  @@index([action])
+}
+
+model Settings {
+  id                   String   @id @default(uuid())
+  key                  String   @unique
+  value                String   // JSON
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([key])
+}

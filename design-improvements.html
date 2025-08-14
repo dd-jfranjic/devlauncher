@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Launcher - Design Improvements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Premium scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, #6366f1, #8b5cf6);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: linear-gradient(180deg, #818cf8, #a78bfa);
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Gradient mesh background */
+        .gradient-mesh {
+            background-image: 
+                radial-gradient(at 20% 50%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 10%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
+        }
+        
+        /* Glow effects */
+        .glow-indigo {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3),
+                        0 0 60px rgba(99, 102, 241, 0.1);
+        }
+        
+        .glow-purple {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3),
+                        0 0 60px rgba(139, 92, 246, 0.1);
+        }
+        
+        /* Status dots with pulse */
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        }
+        
+        .status-running {
+            background: #22c55e;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+            animation: pulse-green 2s infinite;
+        }
+        
+        /* Smooth hover transitions */
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
+                        0 0 30px rgba(99, 102, 241, 0.1);
+        }
+        
+        /* Icon containers */
+        .icon-gradient {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .icon-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        /* Premium buttons */
+        .btn-premium {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn-premium:hover::before {
+            left: 100%;
+        }
+        
+        /* Card depth */
+        .card-3d {
+            background: linear-gradient(135deg, rgba(15, 15, 15, 0.9), rgba(25, 25, 25, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 
+                0 0 0 1px rgba(255, 255, 255, 0.03),
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100">
+
+    <!-- Header -->
+    <div class="sticky top-0 z-50 glass-dark border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Dev Launcher Design Improvements
+                </h1>
+                <div class="flex gap-3">
+                    <a href="#design1" class="px-4 py-2 glass rounded-lg hover:bg-white/5 transition">Design 1</a>
+                    <a href="#design2" class="px-4 py-2 glass rounded-lg hover:bg-white/5 transition">Design 2</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Design 1: Modern Icons & Enhanced UI -->
+    <div id="design1" class="min-h-screen gradient-mesh px-6 py-12">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-2">Design 1: Modern Icons & Enhanced UI</h2>
+            <p class="text-gray-500 mb-8">Phosphor icons, animated elements, premium glassmorphism</p>
+            
+            <div class="card-3d rounded-2xl p-6 mb-8">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="ph-sparkle text-2xl icon-gradient"></i>
+                    Quick Actions - Enhanced
+                </h3>
+                <div class="grid grid-cols-4 gap-4">
+                    <!-- Terminal -->
+                    <button class="group glass rounded-xl p-6 hover-lift hover:bg-white/[0.03] transition-all">
+                        <div class="icon-box w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <i class="ph-terminal text-2xl text-indigo-400"></i>
+                        </div>
+                        <div class="text-sm font-medium">Terminal</div>
+                        <div class="text-xs text-gray-500 mt-1">Open console</div>
+                    </button>
+                    
+                    <!-- Folder -->
+                    <button class="group glass rounded-xl p-6 hover-lift hover:bg-white/[0.03] transition-all">
+                        <div class="icon-box w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <i class="ph-folder-open text-2xl text-purple-400"></i>
+                        </div>
+                        <div class="text-sm font-medium">Explorer</div>
+                        <div class="text-xs text-gray-500 mt-1">Browse files</div>
+                    </button>
+                    
+                    <!-- Code Editor -->
+                    <button class="group glass rounded-xl p-6 hover-lift hover:bg-white/[0.03] transition-all">
+                        <div class="icon-box w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <i class="ph-code text-2xl text-blue-400"></i>
+                        </div>
+                        <div class="text-sm font-medium">VS Code</div>
+                        <div class="text-xs text-gray-500 mt-1">Edit code</div>
+                    </button>
+                    
+                    <!-- Ports -->
+                    <button class="group glass rounded-xl p-6 hover-lift hover:bg-white/[0.03] transition-all">
+                        <div class="icon-box w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <i class="ph-plugs-connected text-2xl text-green-400"></i>
+                        </div>
+                        <div class="text-sm font-medium">Ports</div>
+                        <div class="text-xs text-gray-500 mt-1">Reallocate</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Project Cards Enhanced -->
+            <div class="card-3d rounded-2xl p-6 mb-8">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="ph-stack text-2xl icon-gradient"></i>
+                    Project Cards - Redesigned
+                </h3>
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- WordPress Project -->
+                    <div class="glass rounded-xl p-5 hover-lift hover:bg-white/[0.03] transition-all cursor-pointer group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+                                    <i class="ph-wordpress-logo text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-white group-hover:text-indigo-300 transition">My WordPress Site</h4>
+                                    <p class="text-xs text-gray-500">wordpress-site</p>
+                                </div>
+                            </div>
+                            <span class="status-running w-2 h-2 rounded-full"></span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="px-2 py-1 glass rounded-full text-green-400 border border-green-400/20">
+                                <i class="ph-check-circle mr-1"></i>Running
+                            </span>
+                            <span class="px-2 py-1 glass rounded-full text-gray-400">WSL</span>
+                            <span class="px-2 py-1 glass rounded-full text-gray-400">Port: 9080</span>
+                        </div>
+                    </div>
+
+                    <!-- Next.js Project -->
+                    <div class="glass rounded-xl p-5 hover-lift hover:bg-white/[0.03] transition-all cursor-pointer group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-800 to-black flex items-center justify-center border border-white/10">
+                                    <i class="ph-lightning text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-white group-hover:text-indigo-300 transition">Next.js App</h4>
+                                    <p class="text-xs text-gray-500">nextjs-app</p>
+                                </div>
+                            </div>
+                            <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="px-2 py-1 glass rounded-full text-gray-400 border border-gray-400/20">
+                                <i class="ph-stop-circle mr-1"></i>Stopped
+                            </span>
+                            <span class="px-2 py-1 glass rounded-full text-gray-400">Windows</span>
+                            <span class="px-2 py-1 glass rounded-full text-gray-400">Port: 3000</span>
+                        </div>
+                    </div>
+
+                    <!-- Add New Project -->
+                    <button class="glass rounded-xl p-5 hover-lift hover:bg-white/[0.03] transition-all border-2 border-dashed border-white/10 hover:border-indigo-500/30 group">
+                        <div class="flex flex-col items-center justify-center h-full">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600/20 to-purple-600/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i class="ph-plus text-2xl text-indigo-400"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-400 group-hover:text-white transition">Create Project</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Docker Status Cards -->
+            <div class="card-3d rounded-2xl p-6">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="ph-package text-2xl icon-gradient"></i>
+                    Service Status - Live Indicators
+                </h3>
+                <div class="grid grid-cols-5 gap-3">
+                    <div class="glass rounded-lg p-4 text-center hover:bg-white/[0.03] transition">
+                        <i class="ph-globe text-2xl text-green-400 mb-2"></i>
+                        <div class="text-xs font-medium">Nginx</div>
+                        <div class="flex items-center justify-center gap-1 mt-2">
+                            <span class="status-running w-2 h-2 rounded-full"></span>
+                            <span class="text-xs text-green-400">Active</span>
+                        </div>
+                    </div>
+                    <div class="glass rounded-lg p-4 text-center hover:bg-white/[0.03] transition">
+                        <i class="ph-file-php text-2xl text-purple-400 mb-2"></i>
+                        <div class="text-xs font-medium">PHP-FPM</div>
+                        <div class="flex items-center justify-center gap-1 mt-2">
+                            <span class="status-running w-2 h-2 rounded-full"></span>
+                            <span class="text-xs text-green-400">Active</span>
+                        </div>
+                    </div>
+                    <div class="glass rounded-lg p-4 text-center hover:bg-white/[0.03] transition">
+                        <i class="ph-database text-2xl text-blue-400 mb-2"></i>
+                        <div class="text-xs font-medium">MariaDB</div>
+                        <div class="flex items-center justify-center gap-1 mt-2">
+                            <span class="status-running w-2 h-2 rounded-full"></span>
+                            <span class="text-xs text-green-400">Active</span>
+                        </div>
+                    </div>
+                    <div class="glass rounded-lg p-4 text-center hover:bg-white/[0.03] transition">
+                        <i class="ph-stack text-2xl text-orange-400 mb-2"></i>
+                        <div class="text-xs font-medium">phpMyAdmin</div>
+                        <div class="flex items-center justify-center gap-1 mt-2">
+                            <span class="status-running w-2 h-2 rounded-full"></span>
+                            <span class="text-xs text-green-400">Active</span>
+                        </div>
+                    </div>
+                    <div class="glass rounded-lg p-4 text-center hover:bg-white/[0.03] transition">
+                        <i class="ph-envelope text-2xl text-pink-400 mb-2"></i>
+                        <div class="text-xs font-medium">Mailpit</div>
+                        <div class="flex items-center justify-center gap-1 mt-2">
+                            <span class="status-running w-2 h-2 rounded-full"></span>
+                            <span class="text-xs text-green-400">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Design 2: Minimalist Elegant -->
+    <div id="design2" class="min-h-screen gradient-mesh px-6 py-12">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-2">Design 2: Minimalist Elegant</h2>
+            <p class="text-gray-500 mb-8">Lucide icons, subtle animations, clean interface</p>
+            
+            <!-- Sidebar Preview -->
+            <div class="flex gap-6">
+                <div class="w-80 card-3d rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                                <span class="text-white font-bold">DL</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-sm">Dev Launcher</div>
+                                <div class="text-xs text-gray-500">5 projects</div>
+                            </div>
+                        </div>
+                        <button class="p-1.5 hover:bg-white/5 rounded-lg transition">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                        </button>
+                    </div>
+
+                    <!-- Create Button -->
+                    <button class="w-full btn-premium text-white py-3 px-4 rounded-xl mb-4 font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        New Project
+                    </button>
+
+                    <!-- Project List -->
+                    <div class="space-y-2">
+                        <div class="glass rounded-xl p-3 hover:bg-white/[0.03] transition cursor-pointer border border-indigo-500/30 bg-indigo-500/5">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
+                                        <i data-lucide="layout" class="w-4 h-4 text-blue-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium">Portfolio Site</div>
+                                        <div class="text-xs text-gray-500">portfolio-2024</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="status-running w-1.5 h-1.5 rounded-full"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass rounded-xl p-3 hover:bg-white/[0.03] transition cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-purple-600/20 flex items-center justify-center">
+                                        <i data-lucide="shopping-cart" class="w-4 h-4 text-purple-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium">E-Commerce</div>
+                                        <div class="text-xs text-gray-500">shop-app</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass rounded-xl p-3 hover:bg-white/[0.03] transition cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-green-600/20 flex items-center justify-center">
+                                        <i data-lucide="briefcase" class="w-4 h-4 text-green-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium">Client Dashboard</div>
+                                        <div class="text-xs text-gray-500">client-portal</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="status-running w-1.5 h-1.5 rounded-full"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="flex-1">
+                    <!-- Top Actions Bar -->
+                    <div class="card-3d rounded-2xl p-4 mb-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="px-3 py-1.5 glass rounded-lg text-xs font-medium text-green-400 border border-green-400/20 flex items-center gap-1.5">
+                                    <span class="status-running w-1.5 h-1.5 rounded-full"></span>
+                                    Container Running
+                                </div>
+                                <div class="text-sm text-gray-400">
+                                    Portfolio Site • localhost:3000
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="p-2 glass rounded-lg hover:bg-white/5 transition group">
+                                    <i data-lucide="play" class="w-4 h-4 text-gray-400 group-hover:text-green-400 transition"></i>
+                                </button>
+                                <button class="p-2 glass rounded-lg hover:bg-white/5 transition group">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4 text-gray-400 group-hover:text-blue-400 transition"></i>
+                                </button>
+                                <button class="p-2 glass rounded-lg hover:bg-white/5 transition group">
+                                    <i data-lucide="stop-circle" class="w-4 h-4 text-gray-400 group-hover:text-red-400 transition"></i>
+                                </button>
+                                <div class="w-px h-6 bg-white/10 mx-1"></div>
+                                <button class="p-2 glass rounded-lg hover:bg-white/5 transition group">
+                                    <i data-lucide="terminal" class="w-4 h-4 text-gray-400 group-hover:text-indigo-400 transition"></i>
+                                </button>
+                                <button class="p-2 glass rounded-lg hover:bg-white/5 transition group">
+                                    <i data-lucide="folder-open" class="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition"></i>
+                                </button>
+                                <button class="p-2 glass rounded-lg hover:bg-white/5 transition group">
+                                    <i data-lucide="code-2" class="w-4 h-4 text-gray-400 group-hover:text-blue-400 transition"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links Grid -->
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <a href="#" class="card-3d rounded-xl p-4 hover-lift hover:bg-white/[0.02] transition-all group">
+                            <div class="flex items-center justify-between mb-2">
+                                <i data-lucide="globe" class="w-5 h-5 text-indigo-400"></i>
+                                <i data-lucide="external-link" class="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition"></i>
+                            </div>
+                            <div class="text-sm font-medium mb-1">Site</div>
+                            <div class="text-xs text-gray-500">localhost:3000</div>
+                        </a>
+
+                        <a href="#" class="card-3d rounded-xl p-4 hover-lift hover:bg-white/[0.02] transition-all group">
+                            <div class="flex items-center justify-between mb-2">
+                                <i data-lucide="shield" class="w-5 h-5 text-purple-400"></i>
+                                <i data-lucide="external-link" class="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition"></i>
+                            </div>
+                            <div class="text-sm font-medium mb-1">Admin</div>
+                            <div class="text-xs text-gray-500">admin / pass123</div>
+                        </a>
+
+                        <a href="#" class="card-3d rounded-xl p-4 hover-lift hover:bg-white/[0.02] transition-all group">
+                            <div class="flex items-center justify-between mb-2">
+                                <i data-lucide="database" class="w-5 h-5 text-blue-400"></i>
+                                <i data-lucide="external-link" class="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition"></i>
+                            </div>
+                            <div class="text-sm font-medium mb-1">Database</div>
+                            <div class="text-xs text-gray-500">localhost:3306</div>
+                        </a>
+
+                        <a href="#" class="card-3d rounded-xl p-4 hover-lift hover:bg-white/[0.02] transition-all group">
+                            <div class="flex items-center justify-between mb-2">
+                                <i data-lucide="mail" class="w-5 h-5 text-pink-400"></i>
+                                <i data-lucide="external-link" class="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition"></i>
+                            </div>
+                            <div class="text-sm font-medium mb-1">Mail</div>
+                            <div class="text-xs text-gray-500">localhost:8025</div>
+                        </a>
+                    </div>
+
+                    <!-- CLI Tools Section -->
+                    <div class="card-3d rounded-2xl p-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <i data-lucide="terminal" class="w-5 h-5 text-indigo-400"></i>
+                            Developer Tools
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="glass rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600/20 to-indigo-600/20 flex items-center justify-center">
+                                            <span class="text-xs font-bold text-indigo-400">C</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium">Claude CLI</div>
+                                            <div class="text-xs text-gray-500">v1.2.3 installed</div>
+                                        </div>
+                                    </div>
+                                    <button class="px-2 py-1 text-xs glass rounded-lg hover:bg-white/5 transition text-indigo-400">
+                                        Update
+                                    </button>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <button class="px-2 py-1 text-xs glass rounded-lg hover:bg-white/5 transition">Claude</button>
+                                    <button class="px-2 py-1 text-xs glass rounded-lg hover:bg-white/5 transition">Continue</button>
+                                    <button class="px-2 py-1 text-xs glass rounded-lg hover:bg-white/5 transition">MCP</button>
+                                </div>
+                            </div>
+
+                            <div class="glass rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center">
+                                            <span class="text-xs font-bold text-purple-400">G</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium">Gemini CLI</div>
+                                            <div class="text-xs text-gray-500">v2.0.1 installed</div>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs glass rounded-lg text-green-400 border border-green-400/20">
+                                        Latest
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <button class="px-2 py-1 text-xs glass rounded-lg hover:bg-white/5 transition">Gemini</button>
+                                    <button class="px-2 py-1 text-xs glass rounded-lg hover:bg-white/5 transition">Help</button>
+                                    <button class="px-2 py-1 text-xs glass rounded-lg hover:bg-white/5 transition">Config</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

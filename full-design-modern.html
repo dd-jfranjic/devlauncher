@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Launcher - Complete Modern Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Tabler Icons (beautiful modern icons) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
+    <style>
+        * { 
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        body {
+            background: #000000;
+            background-image: 
+                radial-gradient(ellipse at 20% 30%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 60% 70%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 10%, rgba(120, 219, 255, 0.06) 0%, transparent 50%);
+            min-height: 100vh;
+        }
+        
+        /* Premium scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, rgba(120, 119, 198, 0.3), rgba(255, 119, 198, 0.3));
+            border-radius: 10px;
+        }
+        
+        /* Glass morphism levels */
+        .glass-1 {
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .glass-2 {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-3 {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Smooth transitions */
+        .smooth {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Glow effects */
+        .glow-purple {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4),
+                        0 0 40px rgba(168, 85, 247, 0.2);
+        }
+        
+        .glow-blue {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4),
+                        0 0 40px rgba(59, 130, 246, 0.2);
+        }
+        
+        /* Status indicators */
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            }
+            50% { 
+                opacity: 0.8;
+                box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+            }
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-active {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-inactive {
+            background: #6b7280;
+        }
+        
+        /* Hover card lift */
+        .lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lift:hover {
+            transform: translateY(-2px) scale(1.01);
+        }
+        
+        /* Button shine effect */
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        .btn-shine:hover::before {
+            left: 100%;
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa, #ec4899, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Subtle grid background */
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+    </style>
+</head>
+<body class="text-gray-100">
+
+    <!-- Full Application Layout -->
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="w-72 glass-2 border-r border-white/5 flex flex-col">
+            <!-- Sidebar Header -->
+            <div class="p-5 border-b border-white/5">
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg glow-purple">
+                            <span class="text-white font-bold text-lg">DL</span>
+                        </div>
+                        <div>
+                            <h1 class="font-semibold text-white">Dev Launcher</h1>
+                            <p class="text-xs text-gray-500">by DataDox</p>
+                        </div>
+                    </div>
+                    <button class="p-2 hover:bg-white/5 rounded-lg smooth">
+                        <i class="ti ti-layout-sidebar-left-collapse text-gray-400 text-lg"></i>
+                    </button>
+                </div>
+                
+                <!-- Search -->
+                <div class="relative">
+                    <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                    <input type="text" 
+                           placeholder="Search projects..." 
+                           class="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 smooth">
+                </div>
+            </div>
+            
+            <!-- New Project Button -->
+            <div class="px-4 pt-4">
+                <button class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-medium text-sm flex items-center justify-center gap-2 btn-shine hover:shadow-lg glow-purple smooth">
+                    <i class="ti ti-plus text-lg"></i>
+                    Create New Project
+                </button>
+            </div>
+            
+            <!-- Projects List -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-2">
+                <!-- Active Project -->
+                <div class="glass-3 rounded-xl p-3.5 border border-purple-500/30 bg-purple-500/5 cursor-pointer lift">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center mt-0.5">
+                            <i class="ti ti-brand-wordpress text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-medium text-white">My Blog</h3>
+                                <span class="status-dot status-active"></span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-0.5">my-blog-wp</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-green-400 border border-green-400/20">Running</span>
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-gray-400">WSL</span>
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-gray-400 mono">:9080</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Other Projects -->
+                <div class="glass-1 rounded-xl p-3.5 hover:bg-white/[0.02] cursor-pointer smooth lift">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mt-0.5">
+                            <i class="ti ti-brand-nextjs text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-medium text-gray-200">Dashboard App</h3>
+                                <span class="status-dot status-inactive"></span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-0.5">dashboard-next</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-gray-400">Stopped</span>
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-gray-400">Windows</span>
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-gray-400 mono">:3000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-1 rounded-xl p-3.5 hover:bg-white/[0.02] cursor-pointer smooth lift">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-700 to-green-800 flex items-center justify-center mt-0.5">
+                            <i class="ti ti-shopping-cart text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-medium text-gray-200">E-Commerce</h3>
+                                <span class="status-dot status-active"></span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-0.5">shop-app</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-green-400 border border-green-400/20">Running</span>
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-gray-400">WSL</span>
+                                <span class="px-2 py-0.5 text-xs glass-1 rounded-full text-gray-400 mono">:8080</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-white/5">
+                <button class="w-full py-2.5 px-3 glass-1 rounded-xl hover:bg-white/5 smooth flex items-center justify-center gap-2 text-sm text-gray-400">
+                    <i class="ti ti-settings"></i>
+                    Settings
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Bar -->
+            <header class="glass-1 border-b border-white/5 px-6 py-3.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-xl font-semibold gradient-text">My Blog</h2>
+                        <div class="flex items-center gap-2 px-3 py-1.5 glass-1 rounded-lg">
+                            <span class="status-dot status-active"></span>
+                            <span class="text-xs text-green-400 font-medium">Container Running</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <!-- Docker Controls -->
+                        <div class="flex items-center gap-1 p-1 glass-1 rounded-lg">
+                            <button class="p-2 hover:bg-white/5 rounded-lg smooth group" title="Start">
+                                <i class="ti ti-player-play text-gray-400 group-hover:text-green-400 smooth"></i>
+                            </button>
+                            <button class="p-2 hover:bg-white/5 rounded-lg smooth group" title="Restart">
+                                <i class="ti ti-refresh text-gray-400 group-hover:text-blue-400 smooth"></i>
+                            </button>
+                            <button class="p-2 hover:bg-white/5 rounded-lg smooth group" title="Stop">
+                                <i class="ti ti-player-stop text-gray-400 group-hover:text-red-400 smooth"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="w-px h-8 bg-white/10"></div>
+                        
+                        <!-- Quick Actions -->
+                        <button class="px-3 py-2 glass-1 rounded-lg hover:bg-white/5 smooth text-sm text-gray-300 flex items-center gap-2">
+                            <i class="ti ti-terminal-2"></i>
+                            Terminal
+                        </button>
+                        <button class="px-3 py-2 glass-1 rounded-lg hover:bg-white/5 smooth text-sm text-gray-300 flex items-center gap-2">
+                            <i class="ti ti-folder-open"></i>
+                            Explorer
+                        </button>
+                        <button class="px-3 py-2 glass-1 rounded-lg hover:bg-white/5 smooth text-sm text-gray-300 flex items-center gap-2">
+                            <i class="ti ti-code"></i>
+                            VS Code
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="flex-1 overflow-auto p-6 grid-bg">
+                <!-- Quick Links -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">Quick Links</h3>
+                    <div class="grid grid-cols-5 gap-4">
+                        <a href="#" class="glass-2 rounded-xl p-4 hover:bg-white/[0.03] smooth lift group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600/20 to-blue-700/20 flex items-center justify-center">
+                                    <i class="ti ti-world text-blue-400 text-xl"></i>
+                                </div>
+                                <i class="ti ti-external-link text-gray-600 text-sm group-hover:text-gray-400 smooth"></i>
+                            </div>
+                            <div class="text-sm font-medium text-white mb-1">Site</div>
+                            <div class="text-xs text-gray-500 mono">localhost:9080</div>
+                        </a>
+                        
+                        <a href="#" class="glass-2 rounded-xl p-4 hover:bg-white/[0.03] smooth lift group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600/20 to-purple-700/20 flex items-center justify-center">
+                                    <i class="ti ti-shield-lock text-purple-400 text-xl"></i>
+                                </div>
+                                <i class="ti ti-external-link text-gray-600 text-sm group-hover:text-gray-400 smooth"></i>
+                            </div>
+                            <div class="text-sm font-medium text-white mb-1">Admin</div>
+                            <div class="text-xs text-gray-500">admin / pass123</div>
+                        </a>
+                        
+                        <a href="#" class="glass-2 rounded-xl p-4 hover:bg-white/[0.03] smooth lift group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-600/20 to-green-700/20 flex items-center justify-center">
+                                    <i class="ti ti-database text-green-400 text-xl"></i>
+                                </div>
+                                <i class="ti ti-external-link text-gray-600 text-sm group-hover:text-gray-400 smooth"></i>
+                            </div>
+                            <div class="text-sm font-medium text-white mb-1">Database</div>
+                            <div class="text-xs text-gray-500 mono">localhost:3306</div>
+                        </a>
+                        
+                        <a href="#" class="glass-2 rounded-xl p-4 hover:bg-white/[0.03] smooth lift group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-600/20 to-orange-700/20 flex items-center justify-center">
+                                    <i class="ti ti-adjustments text-orange-400 text-xl"></i>
+                                </div>
+                                <i class="ti ti-external-link text-gray-600 text-sm group-hover:text-gray-400 smooth"></i>
+                            </div>
+                            <div class="text-sm font-medium text-white mb-1">phpMyAdmin</div>
+                            <div class="text-xs text-gray-500 mono">localhost:8081</div>
+                        </a>
+                        
+                        <a href="#" class="glass-2 rounded-xl p-4 hover:bg-white/[0.03] smooth lift group">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-600/20 to-pink-700/20 flex items-center justify-center">
+                                    <i class="ti ti-mail text-pink-400 text-xl"></i>
+                                </div>
+                                <i class="ti ti-external-link text-gray-600 text-sm group-hover:text-gray-400 smooth"></i>
+                            </div>
+                            <div class="text-sm font-medium text-white mb-1">Mailpit</div>
+                            <div class="text-xs text-gray-500 mono">localhost:8025</div>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Services & Tools Grid -->
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Docker Services -->
+                    <div class="glass-2 rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <i class="ti ti-package text-purple-400"></i>
+                            Docker Services
+                        </h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="glass-1 rounded-lg p-3 text-center">
+                                <i class="ti ti-server-2 text-2xl text-green-400 mb-2"></i>
+                                <div class="text-xs font-medium text-gray-300">Nginx</div>
+                                <div class="flex items-center justify-center gap-1 mt-2">
+                                    <span class="status-dot status-active"></span>
+                                    <span class="text-xs text-green-400">Active</span>
+                                </div>
+                            </div>
+                            <div class="glass-1 rounded-lg p-3 text-center">
+                                <i class="ti ti-brand-php text-2xl text-purple-400 mb-2"></i>
+                                <div class="text-xs font-medium text-gray-300">PHP-FPM</div>
+                                <div class="flex items-center justify-center gap-1 mt-2">
+                                    <span class="status-dot status-active"></span>
+                                    <span class="text-xs text-green-400">Active</span>
+                                </div>
+                            </div>
+                            <div class="glass-1 rounded-lg p-3 text-center">
+                                <i class="ti ti-database text-2xl text-blue-400 mb-2"></i>
+                                <div class="text-xs font-medium text-gray-300">MariaDB</div>
+                                <div class="flex items-center justify-center gap-1 mt-2">
+                                    <span class="status-dot status-active"></span>
+                                    <span class="text-xs text-green-400">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Developer Tools -->
+                    <div class="glass-2 rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <i class="ti ti-terminal text-blue-400"></i>
+                            Developer Tools
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="glass-1 rounded-lg p-3 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600/20 to-indigo-600/20 flex items-center justify-center">
+                                        <span class="text-xs font-bold text-blue-400">C</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-200">Claude CLI</div>
+                                        <div class="text-xs text-gray-500">v1.2.3 installed</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button class="px-2 py-1 text-xs glass-1 rounded-lg hover:bg-white/5 smooth">Update</button>
+                                    <button class="px-2 py-1 text-xs glass-1 rounded-lg hover:bg-white/5 smooth">Launch</button>
+                                </div>
+                            </div>
+                            
+                            <div class="glass-1 rounded-lg p-3 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center">
+                                        <span class="text-xs font-bold text-purple-400">G</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-200">Gemini CLI</div>
+                                        <div class="text-xs text-gray-500">v2.0.1 installed</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-1 text-xs glass-1 rounded-lg text-green-400 border border-green-400/20">Latest</span>
+                                    <button class="px-2 py-1 text-xs glass-1 rounded-lg hover:bg-white/5 smooth">Launch</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Logs Preview -->
+                <div class="glass-2 rounded-xl p-6 mt-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold flex items-center gap-2">
+                            <i class="ti ti-file-text text-green-400"></i>
+                            Container Logs
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <button class="px-3 py-1.5 text-xs glass-1 rounded-lg hover:bg-white/5 smooth text-gray-400">
+                                <i class="ti ti-trash"></i> Clear
+                            </button>
+                            <button class="px-3 py-1.5 text-xs glass-1 rounded-lg hover:bg-white/5 smooth text-gray-400">
+                                <i class="ti ti-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="glass-1 rounded-lg p-4 mono text-xs text-gray-400 space-y-1 max-h-48 overflow-auto">
+                        <div class="text-green-400">[2024-08-12 15:42:31] Container my-blog-wp started successfully</div>
+                        <div>[2024-08-12 15:42:32] Nginx server is ready on port 9080</div>
+                        <div>[2024-08-12 15:42:33] PHP-FPM pool started</div>
+                        <div>[2024-08-12 15:42:34] MariaDB accepting connections on port 3306</div>
+                        <div class="text-blue-400">[2024-08-12 15:42:35] WordPress installation detected</div>
+                        <div>[2024-08-12 15:42:36] All services operational</div>
+                        <div class="text-yellow-400">[2024-08-12 15:43:01] Health check passed</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

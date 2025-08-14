@@ -1,0 +1,159 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: {{SLUG}}-nginx
+    ports:
+      - "{{HTTP_PORT}}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/wordpress.conf:/etc/nginx/conf.d/default.conf:ro
+      # Windows bind mounts - may be slower
+      - ./wp-content:/var/www/html/wp-content
+      - wordpress_files:/var/www/html
+    depends_on:
+      - php
+    networks:
+      - {{SLUG}}-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/wp-admin/install.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  php:
+    image: wordpress:php8.2-fpm-alpine
+    container_name: {{SLUG}}-php
+    volumes:
+      - ./php/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+      # Windows bind mounts - may be slower for file operations
+      - ./wp-content:/var/www/html/wp-content
+      - wordpress_files:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${DB_NAME}
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_TABLE_PREFIX: wp_
+      WORDPRESS_DEBUG: 1
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_DEBUG_LOG', true);
+        define('WP_DEBUG_DISPLAY', false);
+        define('SMTP_HOST', 'mailpit');
+        define('SMTP_PORT', 1025);
+    depends_on:
+      - db
+    networks:
+      - {{SLUG}}-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm-healthcheck || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: mariadb:10.11-jammy
+    container_name: {{SLUG}}-db
+    ports:
+      - "{{DB_PORT}}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      # Use named volume for better Windows performance
+      - db_data:/var/lib/mysql
+    networks:
+      - {{SLUG}}-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: {{SLUG}}-phpmyadmin
+    ports:
+      - "{{PHPMYADMIN_PORT}}:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - {{SLUG}}-network
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: {{SLUG}}-mailpit
+    ports:
+      - "{{MAILPIT_UI_PORT}}:8025"  # Web interface
+      - "{{MAILPIT_SMTP_PORT}}:1025" # SMTP server
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    volumes:
+      - mailpit_data:/data
+    networks:
+      - {{SLUG}}-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8025"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  cli:
+    image: wordpress:cli-php8.2
+    container_name: {{SLUG}}-cli
+    volumes:
+      # Windows bind mounts for CLI access
+      - ./wp-content:/var/www/html/wp-content
+      - wordpress_files:/var/www/html
+      - ./scripts:/scripts:ro
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${DB_NAME}
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_TABLE_PREFIX: wp_
+      WP_TITLE: ${WP_TITLE}
+      WP_ADMIN_USER: ${WP_ADMIN_USER}
+      WP_ADMIN_PASSWORD: ${WP_ADMIN_PASSWORD}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL}
+      HTTP_PORT: {{HTTP_PORT}}
+    depends_on:
+      - db
+      - php
+    networks:
+      - {{SLUG}}-network
+    command: tail -f /dev/null
+    restart: unless-stopped
+
+volumes:
+  wordpress_files:
+    driver: local
+  db_data:
+    driver: local
+  mailpit_data:
+    driver: local
+
+networks:
+  {{SLUG}}-network:
+    driver: bridge
+    name: {{SLUG}}-network

@@ -1,0 +1,104 @@
+/* Custom scrollbar styles for Dev Launcher */
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #171717; /* neutral-900 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #404040; /* neutral-700 */
+  border-radius: 4px;
+  border: 2px solid #171717; /* neutral-900 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #525252; /* neutral-600 */
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #737373; /* neutral-500 */
+}
+
+/* For thin scrollbars */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  border: 1px solid #171717;
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #404040 #171717;
+}
+
+/* For specific containers */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #404040 #171717;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(23, 23, 23, 0.5);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(64, 64, 64, 0.8);
+  border-radius: 4px;
+  border: 1px solid rgba(23, 23, 23, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(82, 82, 82, 0.9);
+}
+
+/* For code blocks and logs */
+.code-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.code-scrollbar::-webkit-scrollbar-track {
+  background: #0a0a0a;
+  border-radius: 0;
+}
+
+.code-scrollbar::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 2px;
+  border: 2px solid #0a0a0a;
+}
+
+.code-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* Corner where horizontal and vertical scrollbars meet */
+::-webkit-scrollbar-corner {
+  background: #171717;
+}

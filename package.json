@@ -1,0 +1,117 @@
+{
+  "name": "dev-launcher",
+  "version": "0.1.0",
+  "description": "Windows-native desktop application for managing Docker-based development projects",
+  "main": "dist/electron/main.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:docker": "docker compose up",
+    "dev:local": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "start:local": "node scripts/start-local.js",
+    "dev:server": "tsx watch --clear-screen=false server/src/index.ts",
+    "dev:client": "vite --host 0.0.0.0",
+    "docker:build": "docker compose build --no-cache",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:restart": "docker compose restart",
+    "electron:dev": "set NODE_ENV=development && electron .",
+    "build": "npm run build:server && npm run build:client && npm run build:electron",
+    "build:server": "tsc -p server/tsconfig.json",
+    "build:client": "vite build",
+    "build:electron": "electron-builder",
+    "start": "electron .",
+    "test": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate --schema=./server/prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema=./server/prisma/schema.prisma",
+    "prisma:studio": "prisma studio --schema=./server/prisma/schema.prisma"
+  },
+  "keywords": [
+    "docker",
+    "development",
+    "electron",
+    "react",
+    "typescript"
+  ],
+  "author": "DataDox",
+  "license": "MIT",
+  "dependencies": {
+    "@heroicons/react": "^2.0.18",
+    "@prisma/client": "^5.7.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/rimraf": "^3.0.2",
+    "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "dockerode": "^4.0.0",
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.0",
+    "lucide-react": "^0.539.0",
+    "pino": "^8.17.0",
+    "pino-pretty": "^10.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "rimraf": "^6.0.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^3.3.1",
+    "unzipper": "^0.12.3",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@tailwindcss/forms": "^0.5.7",
+    "@types/cors": "^2.8.17",
+    "@types/dockerode": "^3.3.23",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@types/uuid": "^9.0.7",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "postcss": "^8.4.32",
+    "prisma": "^5.7.0",
+    "tailwindcss": "^3.3.6",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "build": {
+    "appId": "com.datadox.devlauncher",
+    "productName": "Dev Launcher",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

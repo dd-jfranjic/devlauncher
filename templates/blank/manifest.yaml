@@ -1,0 +1,29 @@
+name: blank
+type: blank
+description: Basic empty project with standard configuration files
+version: "1.0.0"
+
+variables:
+  - name: DESCRIPTION
+    type: string
+    default: "A new development project"
+    description: "Project description for README"
+    required: false
+
+ports: {}
+
+locations:
+  wsl:
+    files:
+      - "README.md"
+      - ".gitignore"
+      - "src/.gitkeep"
+  windows:
+    files:
+      - "README.md"
+      - ".gitignore"
+      - "src/.gitkeep"
+
+hooks:
+  postCreate:
+    - "git init"

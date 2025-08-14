@@ -1,0 +1,34 @@
+name: Blank Project
+type: blank
+description: Empty project template for custom development
+icon: 📁
+version: 1.0.0
+author: DataDox
+
+# Port allocations (empty for blank project)
+ports: {}
+
+# Variables (can be overridden)
+variables: []
+
+# Location-specific configurations
+locations:
+  wsl:
+    files:
+      - docker-compose.yml
+      - README.md
+      - .gitignore
+  windows:
+    files:
+      - docker-compose.yml
+      - README.md
+      - .gitignore
+
+# Hooks (optional)
+hooks:
+  preCreate: []
+  postCreate: []
+  preUp: []
+  postUp: []
+  preDown: []
+  postDown: []

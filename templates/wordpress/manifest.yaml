@@ -1,0 +1,102 @@
+name: wordpress
+type: wordpress
+description: Full WordPress development stack with Nginx, PHP-FPM, MariaDB, phpMyAdmin, and Mailpit
+version: "1.0.0"
+
+variables:
+  - name: WP_TITLE
+    type: string
+    default: "{{NAME}}"
+    description: "WordPress site title"
+    required: false
+  - name: WP_ADMIN_USER
+    type: string
+    default: "admin"
+    description: "WordPress admin username"
+    required: false
+  - name: WP_ADMIN_PASSWORD
+    type: string
+    default: "admin123"
+    description: "WordPress admin password"
+    required: false
+  - name: WP_ADMIN_EMAIL
+    type: string
+    default: "admin@example.com"
+    description: "WordPress admin email"
+    required: false
+  - name: DB_NAME
+    type: string
+    default: "wordpress"
+    description: "Database name"
+    required: false
+  - name: DB_USER
+    type: string
+    default: "wordpress"
+    description: "Database user"
+    required: false
+  - name: DB_PASSWORD
+    type: string
+    default: "wordpress123"
+    description: "Database password"
+    required: false
+  - name: DB_ROOT_PASSWORD
+    type: string
+    default: "rootpassword123"
+    description: "Database root password"
+    required: false
+
+ports:
+  http:
+    default: 9080
+    description: "HTTP port for WordPress site"
+  db:
+    default: 9306
+    description: "Database port"
+  phpmyadmin:
+    default: 9081
+    description: "phpMyAdmin web interface"
+  mailpit_ui:
+    default: 9025
+    description: "Mailpit web interface"
+  mailpit_smtp:
+    default: 9125
+    description: "Mailpit SMTP server"
+
+locations:
+  wsl:
+    files:
+      - "README.md"
+      - ".gitignore"
+      - "nginx/nginx.conf"
+      - "nginx/wordpress.conf"
+      - "php/php.ini"
+      - "php/www.conf"
+      - "scripts/wp-setup.sh"
+      - "scripts/wp-auto-install.sh"
+      - "wp-content/.gitkeep"
+      - ".env"
+    compose: "docker-compose.wsl.yml"
+    runtime:
+      - "docker"
+  windows:
+    files:
+      - "README.md"
+      - ".gitignore"
+      - "nginx/nginx.conf"
+      - "nginx/wordpress.conf"
+      - "php/php.ini"
+      - "php/www.conf"
+      - "scripts/wp-setup.sh"
+      - "scripts/wp-auto-install.sh"
+      - "wp-content/.gitkeep"
+      - ".env"
+    compose: "docker-compose.windows.yml"
+    runtime:
+      - "docker"
+
+hooks:
+  postCreate:
+    - "git init"
+    - "chmod +x scripts/*.sh"
+  postUp:
+    - "docker exec {{SLUG}}-cli /scripts/wp-auto-install.sh"

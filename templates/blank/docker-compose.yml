@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  workspace:
+    image: alpine:latest
+    container_name: {{projectSlug}}-workspace
+    command: tail -f /dev/null
+    volumes:
+      - ./:/workspace
+    working_dir: /workspace
+    networks:
+      - {{projectSlug}}-network
+
+networks:
+  {{projectSlug}}-network:
+    driver: bridge

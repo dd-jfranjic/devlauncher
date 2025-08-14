@@ -1,0 +1,193 @@
+{
+  "servers": [
+    {
+      "id": "playwright-mcp",
+      "name": "Playwright MCP ✅",
+      "description": "Browser automation and testing with Playwright",
+      "repository": "https://github.com/microsoft/playwright-mcp",
+      "type": "testing",
+      "icon": "🎭",
+      "installCommand": "npm install -g @playwright/mcp",
+      "tested": true,
+      "wslSupported": true,
+      "windowsSupported": true,
+      "requiredTools": ["node", "npm"],
+      "configTemplate": {
+        "command": "npx",
+        "args": ["@playwright/mcp@latest"],
+        "env": {}
+      }
+    },
+    {
+      "id": "semgrep-mcp",
+      "name": "Semgrep MCP ✅",
+      "description": "Static analysis and security scanning with Semgrep",
+      "repository": "https://semgrep.dev/docs/mcp",
+      "type": "security",
+      "icon": "🔍",
+      "installCommand": "pip install semgrep-mcp",
+      "tested": true,
+      "wslSupported": true,
+      "windowsSupported": false,
+      "requiredTools": ["python", "pip"],
+      "requiresApiToken": true,
+      "apiTokenEnvVar": "SEMGREP_APP_TOKEN",
+      "apiTokenPlaceholder": "Enter your Semgrep API token",
+      "configTemplate": {
+        "command": "semgrep-mcp",
+        "args": [],
+        "env": {
+          "SEMGREP_APP_TOKEN": "${SEMGREP_APP_TOKEN}"
+        }
+      }
+    },
+    {
+      "id": "exa-mcp",
+      "name": "Exa MCP ✅",
+      "description": "AI-powered web search and data retrieval",
+      "repository": "https://github.com/exa-labs/exa-mcp-server",
+      "type": "search",
+      "icon": "🔎",
+      "installCommand": "npm install -g exa-mcp-server",
+      "tested": true,
+      "wslSupported": true,
+      "windowsSupported": false,
+      "requiredTools": ["node", "npm"],
+      "requiresApiToken": true,
+      "apiTokenEnvVar": "EXA_API_KEY",
+      "apiTokenPlaceholder": "Enter your Exa API key",
+      "configTemplate": {
+        "command": "npx",
+        "args": ["-y", "exa-mcp-server"],
+        "env": {
+          "EXA_API_KEY": "${EXA_API_KEY}"
+        }
+      }
+    },
+    {
+      "id": "docker-gateway-mcp",
+      "name": "Docker MCP Gateway (Official)",
+      "description": "Enterprise gateway for running MCP servers in secure Docker containers",
+      "repository": "https://github.com/docker/mcp-gateway",
+      "type": "docker",
+      "icon": "🐳",
+      "installCommand": "# Requires Docker Desktop with MCP Toolkit extension",
+      "tested": false,
+      "wslSupported": true,
+      "windowsSupported": true,
+      "requiredTools": ["docker"],
+      "requiresDockerDesktop": true,
+      "configTemplate": {
+        "command": "docker",
+        "args": ["mcp", "gateway", "run"]
+      }
+    },
+    {
+      "id": "jina-mcp",
+      "name": "Jina MCP Tools ✅",
+      "description": "Neural search and AI tools with Jina",
+      "repository": "https://github.com/PsychArch/jina-mcp-tools",
+      "type": "ai",
+      "icon": "🧠",
+      "installCommand": "npm install -g jina-mcp-tools",
+      "tested": true,
+      "wslSupported": true,
+      "windowsSupported": false,
+      "requiredTools": ["node", "npm"],
+      "requiresApiToken": true,
+      "apiTokenEnvVar": "JINA_API_KEY",
+      "apiTokenPlaceholder": "Enter your Jina API key",
+      "configTemplate": {
+        "command": "npx",
+        "args": ["jina-mcp-tools"],
+        "env": {
+          "JINA_API_KEY": "${JINA_API_KEY}"
+        }
+      }
+    },
+    {
+      "id": "ref-tools-mcp",
+      "name": "Ref Tools MCP",
+      "description": "Stop hallucinations with token-efficient search over documentation",
+      "repository": "https://github.com/ref-tools/ref-tools-mcp",
+      "type": "documentation",
+      "icon": "📚",
+      "installCommand": "npm install -g ref-tools-mcp",
+      "tested": false,
+      "wslSupported": true,
+      "windowsSupported": false,
+      "requiredTools": ["node", "npm"],
+      "requiresApiToken": true,
+      "apiTokenEnvVar": "REF_API_KEY",
+      "apiTokenPlaceholder": "Enter your Ref API key (from ref.tools)",
+      "configTemplate": {
+        "command": "npx",
+        "args": ["ref-tools-mcp@latest"],
+        "env": {
+          "REF_API_KEY": "${REF_API_KEY}"
+        }
+      }
+    },
+    {
+      "id": "supabase-mcp",
+      "name": "Supabase MCP",
+      "description": "Supabase database and authentication operations",
+      "repository": "https://github.com/supabase-community/supabase-mcp",
+      "type": "database",
+      "icon": "⚡",
+      "installCommand": "npm install -g @supabase/mcp-server",
+      "tested": false,
+      "wslSupported": true,
+      "windowsSupported": false,
+      "requiredTools": ["node", "npm"],
+      "configTemplate": {
+        "command": "supabase-mcp",
+        "args": ["serve"],
+        "env": {
+          "SUPABASE_URL": "${SUPABASE_URL}",
+          "SUPABASE_KEY": "${SUPABASE_KEY}"
+        }
+      }
+    },
+    {
+      "id": "mysql-mcp",
+      "name": "MySQL MCP Server",
+      "description": "MySQL database operations and management",
+      "repository": "https://github.com/benborla/mcp-server-mysql",
+      "type": "database",
+      "icon": "🗄️",
+      "installCommand": "npm install -g mcp-server-mysql",
+      "tested": false,
+      "wslSupported": true,
+      "windowsSupported": false,
+      "requiredTools": ["node", "npm"],
+      "configTemplate": {
+        "command": "mcp-server-mysql",
+        "args": ["serve"],
+        "env": {
+          "MYSQL_HOST": "${MYSQL_HOST}",
+          "MYSQL_USER": "${MYSQL_USER}",
+          "MYSQL_PASSWORD": "${MYSQL_PASSWORD}",
+          "MYSQL_DATABASE": "${MYSQL_DATABASE}"
+        }
+      }
+    },
+    {
+      "id": "docker-mcp",
+      "name": "Docker Container Manager ✅",
+      "description": "Manage Docker containers and compose stacks through Claude",
+      "repository": "https://github.com/QuantGeekDev/docker-mcp",
+      "type": "docker",
+      "icon": "🐋",
+      "installCommand": "pip install uv",
+      "tested": true,
+      "wslSupported": true,
+      "windowsSupported": false,
+      "requiredTools": ["python", "pip", "docker"],
+      "configTemplate": {
+        "command": "uvx",
+        "args": ["docker-mcp"]
+      }
+    }
+  ]
+}

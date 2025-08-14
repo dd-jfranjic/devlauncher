@@ -1,0 +1,76 @@
+name: nextjs
+type: nextjs
+description: Next.js React application with Docker development setup
+version: "1.0.0"
+
+variables:
+  - name: RUNTIME
+    type: string
+    default: "docker"
+    description: "Runtime environment (docker or node)"
+    required: false
+  - name: NODE_VERSION
+    type: string
+    default: "20"
+    description: "Node.js version"
+    required: false
+  - name: DESCRIPTION
+    type: string
+    default: "A Next.js React application"
+    description: "Project description"
+    required: false
+
+ports:
+  http:
+    default: 3000
+    description: "HTTP port for the Next.js application"
+
+locations:
+  wsl:
+    files:
+      - "package.json"
+      - "next.config.js"
+      - "tailwind.config.js"
+      - "postcss.config.js"
+      - "tsconfig.json"
+      - ".eslintrc.json"
+      - "README.md"
+      - ".gitignore"
+      - "Dockerfile"
+      - ".dockerignore"
+      - "src/app/layout.tsx"
+      - "src/app/page.tsx"
+      - "src/app/globals.css"
+      - "src/components/ui/button.tsx"
+      - "src/lib/utils.ts"
+      - "public/.gitkeep"
+    compose: "docker-compose.wsl.yml"
+    runtime:
+      - "docker"
+  windows:
+    files:
+      - "package.json"
+      - "next.config.js"
+      - "tailwind.config.js"
+      - "postcss.config.js"
+      - "tsconfig.json"
+      - ".eslintrc.json"
+      - "README.md"
+      - ".gitignore"
+      - "Dockerfile"
+      - ".dockerignore"
+      - "src/app/layout.tsx"
+      - "src/app/page.tsx"
+      - "src/app/globals.css"
+      - "src/components/ui/button.tsx"
+      - "src/lib/utils.ts"
+      - "public/.gitkeep"
+    compose: "docker-compose.windows.yml"
+    runtime:
+      - "docker"
+      - "node"
+
+hooks:
+  postCreate:
+    - "git init"
+    - "echo 'Next.js project created successfully!'"

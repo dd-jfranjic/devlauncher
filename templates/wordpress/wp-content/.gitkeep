@@ -1,0 +1,9 @@
+# WordPress wp-content directory
+# 
+# This directory will contain:
+# - /themes/ - Your custom themes
+# - /plugins/ - Your custom plugins  
+# - /uploads/ - User uploaded files
+# 
+# The directory is bind-mounted to the WordPress container
+# so changes made here will be reflected immediately

@@ -1,0 +1,69 @@
+# Dev Launcher
+.devlauncher/
+
+# WordPress Core
+/wp-admin/
+/wp-includes/
+/wp-*.php
+/index.php
+/readme.html
+/wp-config.php
+/wp-config-sample.php
+
+# WordPress Content - Keep structure but ignore WordPress defaults
+wp-content/index.php
+wp-content/themes/twenty*/
+wp-content/plugins/akismet/
+wp-content/plugins/hello.php
+
+# WordPress Uploads
+wp-content/uploads/
+
+# WordPress Cache & Logs
+wp-content/cache/
+wp-content/backup*/
+wp-content/backups/
+wp-content/blogs.dir/
+wp-content/upgrade/
+*.log
+
+# Database backups
+*.sql
+*.sql.gz
+
+# Environment & Config
+.env.local
+.env.production
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.docker/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Package managers
+node_modules/
+vendor/
+composer.lock
+
+# Build files
+dist/
+build/

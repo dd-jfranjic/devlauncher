@@ -1,0 +1,44 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: {{SLUG}}-app
+    ports:
+      - "{{HTTP_PORT}}:3000"
+    volumes:
+      # Bind mount for hot reload - slower on Windows NTFS
+      # Consider using named volumes for better performance
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      # Alternative: Use named volumes for better performance (no hot reload)
+      # - app-src:/app/src
+      # - app-public:/app/public
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - CHOKIDAR_USEPOLLING=true   # Enable polling for Windows
+      - WATCHPACK_POLLING=true
+    networks:
+      - {{SLUG}}-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  {{SLUG}}-network:
+    driver: bridge
+    name: {{SLUG}}-network
+
+# Optional: Named volumes for better Windows performance
+# volumes:
+#   app-src:
+#     driver: local
+#   app-public:
+#     driver: local
