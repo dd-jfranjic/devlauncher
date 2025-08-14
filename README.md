@@ -1,140 +1,195 @@
 # 🚀 Dev Launcher
 
-**Dev Launcher** je Windows-native desktop aplikacija za upravljanje Docker-based development projektima. Omogućava kreiranje i pokretanje development okruženja jednim klikom, s podrškom za WSL i Windows lokacije.
+**Dev Launcher** is a Windows-native desktop application for managing Docker-based development projects. Create and run development environments with a single click, featuring support for both WSL and Windows locations.
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Windows%2011-lightgrey)
+![Docker](https://img.shields.io/badge/Docker-Required-blue)
+![WSL2](https://img.shields.io/badge/WSL2-Supported-green)
 
-## ✨ Značajke
+## ✨ Features
 
-- 🎯 **One-click projekt setup** - Kreirajte i pokrenite projekte u nekoliko sekundi
-- 🐳 **All-in-Docker arhitektura** - Sve komponente rade u kontejnerima
-- 📍 **WSL i Windows podrška** - Optimizirano za obje lokacije
-- 🔧 **Template sustav** - Blank, Next.js, WordPress templati
-- 🔌 **Port management** - Automatska alokacija bez kolizija
-- 🤖 **AI integracija** - Claude i Gemini CLI podrška
-- 📊 **Real-time logovi** - Praćenje Docker logova uživo
-- 🎨 **Moderni UI** - Electron + React + Tailwind CSS
+- 🎯 **One-click project setup** - Create and launch projects in seconds
+- 🐳 **All-in-Docker architecture** - Every component runs in containers
+- 📍 **WSL & Windows dual support** - Optimized for both environments
+- 🔧 **Template system** - Blank, Next.js, WordPress project templates
+- 🔌 **Smart port management** - Automatic allocation with conflict resolution
+- 🤖 **AI CLI integration** - Claude, Gemini, and Qwen CLI tools support
+- 📊 **Real-time logging** - Live Docker container log streaming
+- 🎨 **Modern UI** - Electron + React + TypeScript + Tailwind CSS
+- 🧭 **MCP Protocol support** - Model Context Protocol server management
+- 🔗 **Quick Links** - Instant access to project services and admin panels
+- 📁 **External project import** - Import existing Docker projects seamlessly
 
-## 📋 Preduvjeti
+## 📋 Prerequisites
 
-- **Windows 11** (ili Windows 10 verzija 2004+)
-- **WSL2** s Ubuntu distribucijom
-- **Docker Desktop** za Windows
-- **Node.js 20+** (za development)
-- **PowerShell 7** (preporučeno)
-- **Windows Terminal** (preporučeno)
-- **VS Code** (opcionalno)
+- **Windows 11** (or Windows 10 version 2004+)
+- **WSL2** with Ubuntu distribution
+- **Docker Desktop** for Windows
+- **Node.js 20+** (for development)
+- **PowerShell 7** (recommended)
+- **Windows Terminal** (recommended)
+- **VS Code or Cursor** (optional)
 
-## 🔧 Instalacija
+## 🔧 Installation
 
-### 1. Klonirajte repozitorij
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/dev-launcher.git
-cd dev-launcher
+git clone https://github.com/dd-jfranjic/devlauncher.git
+cd devlauncher
 ```
 
-### 2. Instalirajte dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Postavite bazu podataka
+### 3. Setup the database
 
 ```bash
-# Generirajte Prisma client
+# Generate Prisma client
 npx prisma generate
 
-# Pokrenite migracije
+# Run database migrations
 npx prisma migrate dev --name init
 ```
 
-### 4. Pokrenite Dev Launcher u Docker kontejneru
+### 4. Run Dev Launcher in Docker container
 
 ```bash
-# Buildajte i pokrenite kontejner
+# Build and start the container
 docker compose up -d
 
-# Provjerite logove
+# Check logs
 docker logs devlauncher -f
 ```
 
-Dev Launcher backend će biti dostupan na `http://localhost:9976`
+The Dev Launcher backend will be available at `http://localhost:9976`
 
-### 5. Pokrenite Electron aplikaciju
+### 5. Launch the Electron application
 
 ```bash
-# U novom terminalu
+# In a new terminal
 npm run dev:client
 ```
 
-## 🚀 Korištenje
+## 🚀 Usage
 
-### Kreiranje novog projekta
+### Creating a new project
 
-1. Kliknite **"New Project"** u sidebaru
-2. Unesite ime projekta
-3. Odaberite tip (Blank, Next.js, WordPress)
-4. Odaberite lokaciju (WSL ili Windows)
-5. Kliknite **"Create Project"**
+1. Click **"New Project"** in the sidebar
+2. Enter project name and slug
+3. Choose project type (Blank, Next.js, WordPress)
+4. Select location (WSL or Windows)
+5. Configure variables and ports
+6. Click **"Create Project"**
 
-### Upravljanje projektima
+### Managing projects
 
-- **Start/Stop** - Pokrenite ili zaustavite Docker kontejnere
-- **Open Terminal** - Otvorite PowerShell u project direktoriju
-- **Open Folder** - Otvorite File Explorer
-- **Open Editor** - Otvorite VS Code
+- **Start/Stop** - Launch or stop Docker containers
+- **Quick Actions** - Terminal, Folder, Editor, Port reallocation
+- **Quick Links** - Direct access to running services (Frontend, API, Admin panels)
+- **Docker Tab** - Container management and service status
+- **Logs Tab** - Real-time container log streaming
+- **MCP Tab** - Model Context Protocol server management
 
-### Instalacija CLI alata
+### AI CLI Tools Integration
 
-1. Otvorite projekt
-2. Idite na **Overview** tab
-3. Kliknite **"Install Claude CLI"** ili **"Install Gemini CLI"**
+1. Open any project
+2. Go to **Overview** tab
+3. Install AI CLI tools:
+   - **Claude CLI** - Anthropic's AI assistant
+   - **Gemini CLI** - Google's AI assistant  
+   - **Qwen CLI** - Qwen3-Coder AI assistant
+4. Use CLI buttons for quick access (Claude, Continue, Bypass modes)
+
+### MCP Server Management
+
+1. Navigate to **MCP Tab**
+2. Install available MCP servers:
+   - **Playwright MCP** - Browser automation and testing
+   - **Semgrep MCP** - Static code analysis (requires API token)
+   - **Exa MCP** - Web search and research (requires API key)
+   - **Jina MCP** - Neural search capabilities (requires API key)
+   - **Ref Tools MCP** - Documentation search (requires API key)
+   - **Docker MCP** - Container management tools
+3. Configure API tokens where required
+4. Test server connectivity with `claude mcp list`
+
+### External Project Import
+
+Dev Launcher supports importing existing Docker projects:
+
+1. Click **"New Project"** → **"External Import"**
+2. Provide existing project details:
+   - **Name**: Display name for the project
+   - **Slug**: URL-friendly identifier
+   - **Docker Project Name**: Existing docker-compose project name
+   - **Host Path**: Path to the existing project directory
+3. Dev Launcher will:
+   - Parse existing docker-compose.yml for services and ports
+   - Import service configurations automatically
+   - Maintain original project structure
+   - Add Dev Launcher management capabilities
+
+**Example**: Fiskal AI project successfully imported and managed through Dev Launcher.
 
 ## 🛠️ Development
 
-### Struktura projekta
+### Project structure
 
 ```
-dev-launcher/
-├── server/          # Backend API (Node.js + Express)
-├── client/          # Frontend (React + Vite)
-├── electron/        # Electron main process
-├── templates/       # Project templates
-├── .claude/         # Claude sub-agents
-└── docker-compose.yml
+devlauncher/
+├── server/              # Backend API (Node.js + Express + Prisma)
+│   ├── src/api/        # REST API endpoints
+│   ├── src/services/   # Business logic services
+│   ├── src/utils/      # Utility functions
+│   └── prisma/         # Database schema and migrations
+├── client/             # Frontend (React + Vite + TypeScript)
+│   ├── src/components/ # React components
+│   ├── src/stores/     # Zustand state management
+│   ├── src/lib/        # API client and utilities
+│   └── src/styles/     # Tailwind CSS styles
+├── templates/          # Project templates
+│   ├── wordpress/      # WordPress + MariaDB + phpMyAdmin + Mailpit
+│   ├── nextjs/        # Next.js + TypeScript + Tailwind
+│   └── blank/         # Empty template for custom projects
+├── .claude/           # Claude Code sub-agents
+└── docker-compose.yml # Dev Launcher container configuration
 ```
 
 ### Development mode
 
 ```bash
-# Pokrenite sve u development modu
+# Start all services in development mode
 npm run dev
 
-# Ili pojedinačno:
-npm run dev:server   # Backend
-npm run dev:client   # Frontend
+# Or individually:
+npm run dev:server   # Backend API server
+npm run dev:client   # Frontend React app
 ```
 
-### Build za produkciju
+### Build for production
 
 ```bash
 npm run build
+npm run electron:build
 ```
 
-## 🐳 Docker arhitektura
+## 🐳 Docker Architecture
 
-Dev Launcher koristi "All-in-Docker" pristup:
+Dev Launcher uses an "All-in-Docker" approach:
 
-- **devlauncher** kontejner - Backend API server
-- **Per-project kontejneri** - Svaki projekt ima vlastite kontejnere
-- **Izolirane mreže** - Svaki projekt ima vlastitu Docker mrežu
-- **Named volumes** - Za perzistentne podatke
+- **devlauncher container** - Backend API server
+- **Per-project containers** - Each project has its own container stack
+- **Isolated networks** - Each project has its own Docker network
+- **Named volumes** - For persistent data storage
+- **Port allocation** - Dynamic port assignment with conflict resolution
 
-### Docker Compose konfiguracija
+### Docker Compose Configuration
 
 ```yaml
 services:
@@ -144,40 +199,61 @@ services:
     ports:
       - "127.0.0.1:9976:9976"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - devl_db:/app/server/prisma
-      - devl_logs:/app/.devlauncher/logs
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker API access
+      - devl_db:/app/server/prisma                 # Database persistence
+      - devl_logs:/app/.devlauncher/logs           # Log storage
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
 ```
 
-## 📝 API Dokumentacija
+## 📝 API Documentation
 
-Backend API je dostupan na `http://localhost:9976/api/v1`
+The backend API is available at `http://localhost:9976/api`
 
-### Autentifikacija
+### Authentication
 
-Svi API pozivi zahtijevaju Bearer token:
+All API calls require a Bearer token:
 
 ```bash
-curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:9976/api/v1/projects
+curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:9976/api/projects
 ```
 
-Token se automatski generira pri prvom pokretanju i sprema u `~/.devlauncher/auth.json`
+The token is automatically generated on first run and stored in the database.
 
-### Glavni endpointi
+### Main endpoints
 
-- `GET /projects` - Lista projekata
-- `POST /projects` - Kreiraj novi projekt
-- `POST /projects/:slug/up` - Pokreni projekt
-- `POST /projects/:slug/down` - Zaustavi projekt
-- `DELETE /projects/:slug` - Obriši projekt
+#### Projects
+- `GET /projects` - List all projects
+- `POST /projects` - Create new project
+- `GET /projects/:slug` - Get project details
+- `POST /projects/:slug/start` - Start project containers
+- `POST /projects/:slug/stop` - Stop project containers
+- `DELETE /projects/:slug` - Delete project
 
-## 🧪 Testiranje
+#### CLI Tools
+- `POST /projects/:slug/install/claude` - Install Claude CLI
+- `POST /projects/:slug/install/gemini` - Install Gemini CLI
+- `POST /projects/:slug/install/qwen` - Install Qwen CLI
+- `GET /projects/:slug/check-cli-versions` - Check CLI versions
+
+#### MCP Servers
+- `GET /mcp/servers` - List available MCP servers
+- `POST /mcp/install` - Install MCP server
+- `DELETE /mcp/remove/:serverId` - Remove MCP server
+
+#### System
+- `POST /system/execute` - Execute system commands (terminal, folder, editor)
+- `GET /settings` - Get application settings
+- `PUT /settings` - Update application settings
+
+## 🧪 Testing
 
 ```bash
-# Unit testovi
+# Unit tests
 npm test
 
-# E2E testovi
+# End-to-end tests with Playwright
 npm run test:e2e
 
 # Linting
@@ -187,50 +263,121 @@ npm run lint
 npm run typecheck
 ```
 
-## 📊 Performanse
+## 📊 Performance
 
 - **UI load time**: < 1.5s
 - **Project creation**: < 90s
 - **Port allocation**: < 500ms
-- **Podrška za 1000+ projekata**
+- **Support for 1000+ projects**
 
-## 🔒 Sigurnost
+## 🔒 Security
 
-- API dostupan samo na localhost (127.0.0.1)
-- Bearer token autentifikacija
-- CSRF zaštita za mutacije
-- Validacija svih inputa
-- Audit log za sve akcije
+- **Localhost only** - API accessible only on 127.0.0.1
+- **Bearer token authentication** - Secure API access
+- **CSRF protection** - For all mutations
+- **Input validation** - All inputs validated with Zod
+- **Audit logging** - All actions logged for security
+- **Path validation** - Whitelist approach for file operations
+- **Docker socket security** - Limited access with audit logging
 
-## 🐛 Poznati problemi
+## 🌍 Platform Support
 
-1. **Windows bind mount performanse** - Koristite WSL lokaciju za bolje performanse
-2. **Port kolizije** - Aplikacija automatski realocira portove
-3. **WSL path duljina** - Koristite kratke nazive projekata
+### WSL Integration
 
-## 🤝 Doprinosi
+- **Terminal**: Opens Ubuntu terminal directly in project directory
+- **Folder**: Access via Windows Explorer using UNC paths (`\\wsl$\Ubuntu\...`)
+- **Editor**: VS Code/Cursor opens in WSL Remote mode
+- **Docker**: Commands executed via WSL for proper container management
+- **Permissions**: Proper user context (jfranjic, not root)
 
-Doprinosi su dobrodošli! Molimo:
+### Windows Native
 
-1. Fork repozitorij
-2. Kreirajte feature branch
-3. Commitajte promjene
-4. Push na branch
-5. Otvorite Pull Request
+- **Terminal**: PowerShell 7 in project directory
+- **Folder**: Windows Explorer integration
+- **Editor**: Native VS Code/Cursor
+- **Docker**: Docker Desktop integration
+- **Paths**: Native Windows path handling
 
-## 📄 Licenca
+## 🐛 Known Issues
 
-MIT License - pogledajte [LICENSE](LICENSE) datoteku
+1. **Windows bind mount performance** - Use WSL location for better performance
+2. **Port conflicts** - Application automatically reallocates ports
+3. **WSL path length limits** - Use shorter project names
+4. **Terminal commands require local Dev Launcher** - Not available when running in Docker
 
-## 👥 Tim
+## 🎯 Roadmap
 
-- **DataDox** - Glavni razvoj
+### Upcoming Features
+- **Archon AI Integration** - Global AI command center for all projects
+- **Team collaboration** - Multi-user project sharing
+- **Cloud deployment** - Deploy projects to cloud providers
+- **Plugin system** - Custom project templates and extensions
+- **Backup & sync** - Project configuration backup to cloud
 
-## 📞 Podrška
+### Future Enhancements
+- **Visual project designer** - Drag-and-drop container orchestration
+- **Performance monitoring** - Container resource usage tracking
+- **Auto-scaling** - Dynamic resource allocation
+- **CI/CD integration** - GitHub Actions, GitLab CI support
 
-- **GitHub Issues**: [github.com/yourusername/dev-launcher/issues](https://github.com/yourusername/dev-launcher/issues)
-- **Dokumentacija**: [docs/](docs/)
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b features/new-feature`)
+3. Make your changes
+4. Run tests (`npm test`)
+5. Commit your changes (`git commit -am 'Add new feature'`)
+6. Push to the branch (`git push origin features/new-feature`)
+7. Open a Pull Request
+
+### Development Guidelines
+
+- Follow existing code style and conventions
+- Add tests for new functionality
+- Update documentation as needed
+- Use TypeScript for all new code
+- Follow the established project structure
+
+## 📄 License
+
+MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Team
+
+- **DataDox** - Lead Development
+- **jfranjic** - Architecture & Implementation
+
+## 🙏 Acknowledgments
+
+- **Anthropic** - Claude CLI integration
+- **Google** - Gemini CLI integration
+- **Qwen Team** - Qwen3-Coder CLI integration
+- **Docker** - Container orchestration platform
+- **Microsoft** - WSL2 and Windows Terminal
+- **Electron** - Cross-platform desktop framework
+
+## 📞 Support
+
+- **GitHub Issues**: [github.com/dd-jfranjic/devlauncher/issues](https://github.com/dd-jfranjic/devlauncher/issues)
+- **Documentation**: Available in the `/docs` directory
+- **Discord**: Community support (coming soon)
+
+## 🏆 Featured Projects
+
+### Fiskal AI
+A complete AI-powered financial application successfully imported and managed through Dev Launcher:
+- **Services**: React frontend, Node.js backend, PostgreSQL, Redis, Adminer, Mailpit
+- **Status**: ✅ Running with full CLI integration (Claude v1.0.43, Qwen CLI)
+- **Features**: Real-time Quick Links, Docker container management, MCP server integration
 
 ---
 
-Made with ❤️ by DataDox
+<div align="center">
+
+**Made with ❤️ by DataDox**
+
+[⭐ Star this repo](https://github.com/dd-jfranjic/devlauncher) | [🐛 Report issues](https://github.com/dd-jfranjic/devlauncher/issues) | [📖 Documentation](./docs)
+
+</div>
