@@ -17,7 +17,8 @@ import {
   ProjectType,
   ProjectLocation,
   ProjectStatus,
-  ProjectStatusValues
+  ProjectStatusValues,
+  ProjectTypeValues
 } from '../domain/types';
 import { PortAllocatorService } from '../services/port-allocator';
 import { DockerService } from '../services/docker-service';
@@ -440,6 +441,7 @@ projectRouter.put('/:slug',
 projectRouter.delete('/:slug', validateParams(z.object({ slug: slugSchema })), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { slug } = req.params;
+    logger.info(`Starting DELETE operation for project: ${slug}`);
 
     const existingProject = await prisma.project.findUnique({
       where: { slug }
@@ -468,7 +470,13 @@ projectRouter.delete('/:slug', validateParams(z.object({ slug: slugSchema })), a
     // CRITICAL: Don't delete files for external-import projects
     if (existingProject.type !== ProjectTypeValues.EXTERNAL_IMPORT) {
       // Delete project folder only for non-external projects
-      const paths = JSON.parse(existingProject.paths);
+      let paths;
+      try {
+        paths = JSON.parse(existingProject.paths);
+      } catch (pathsError) {
+        logger.error('Failed to parse project paths JSON:', pathsError);
+        throw new HttpError(500, 'InternalServerError', 'Invalid project paths configuration');
+      }
       
       try {
         if (existingProject.location === 'wsl') {
@@ -483,9 +491,15 @@ projectRouter.delete('/:slug', validateParams(z.object({ slug: slugSchema })), a
               const deleteCommand = `wsl.exe -d Ubuntu -u jfranjic bash -c "rm -rf '${wslPath}'"`;
               await execAsync(deleteCommand, { timeout: 10000 });
             } catch (error) {
-              logger.info('Regular rm failed, trying with sudo...');
-              const sudoDeleteCommand = `wsl.exe -d Ubuntu bash -c "sudo rm -rf '${wslPath}'"`;
-              await execAsync(sudoDeleteCommand, { timeout: 10000 });
+              logger.info('Regular rm failed, trying with Docker container for root files...');
+              try {
+                // Use Docker container to handle root-owned files
+                const dockerCleanCommand = `wsl.exe -d Ubuntu -u jfranjic bash -c "docker run --rm -v '${wslPath}:/data' ubuntu bash -c 'rm -rf /data/*' && rmdir '${wslPath}'"`;
+                await execAsync(dockerCleanCommand, { timeout: 30000 });
+                logger.info('Docker container successfully cleaned root files');
+              } catch (dockerError) {
+                logger.warn('Docker cleanup also failed, but continuing with database deletion');
+              }
             }
             logger.info(`WSL project folder deleted: ${wslPath}`);
           }
@@ -494,16 +508,24 @@ projectRouter.delete('/:slug', validateParams(z.object({ slug: slugSchema })), a
           logger.info('Windows project deletion not implemented');
         }
       } catch (folderError) {
-        logger.warn('Failed to delete project folder:', folderError);
+        logger.warn('Failed to delete project folder, but continuing with database deletion:', folderError);
+        // Continue to database deletion even if folder deletion fails
       }
     } else {
       logger.info(`Skipping file deletion for external-import project: ${slug}`);
     }
 
     // Delete project (cascades to tasks and port reservations)
-    await prisma.project.delete({
-      where: { slug }
-    });
+    try {
+      logger.info(`Attempting to delete project from database: ${slug}`);
+      await prisma.project.delete({
+        where: { slug }
+      });
+      logger.info(`Successfully deleted project from database: ${slug}`);
+    } catch (dbError) {
+      logger.error('Failed to delete project from database:', dbError);
+      throw new HttpError(500, 'DatabaseError', `Failed to delete project: ${dbError.message}`);
+    }
 
     // Audit log
     auditLogger.info('Project deleted', {
@@ -521,8 +543,11 @@ projectRouter.delete('/:slug', validateParams(z.object({ slug: slugSchema })), a
       }
     };
 
+    logger.info(`Successfully completed DELETE operation for project: ${req.params.slug}`);
     res.json(response);
   } catch (error) {
+    logger.error(`DELETE operation failed for project: ${req.params.slug}`, error);
+    console.error('DELETE ERROR DETAILS:', error);
     next(error);
   }
 });
@@ -778,8 +803,14 @@ projectRouter.post('/:slug/open/terminal', validateParams(z.object({ slug: slugS
                                  !command.includes('--help');
         
         if (isInteractiveCLI) {
-          // Interactive CLI tools - just run them, they handle the terminal session
-          wtCommand = `wt.exe -p Ubuntu -- wsl.exe -d Ubuntu -u jfranjic --cd "${wslPath}" bash -lic "${command}"`;
+          // Interactive CLI tools - ensure we're in the correct directory with explicit cd
+          // This is critical for project isolation - Claude CLI must run in specific project folder
+          // Use --mcp-config to force reading local project MCP configuration
+          let enhancedCommand = command;
+          if (command.startsWith('claude') && !command.includes('--mcp-config')) {
+            enhancedCommand = `claude --mcp-config "${wslPath}/.mcp.json" ${command.substring(6)}`.trim();
+          }
+          wtCommand = `wt.exe -p Ubuntu -- wsl.exe -d Ubuntu -u jfranjic --cd "${wslPath}" bash -lic "cd '${wslPath}' && echo 'Running ${enhancedCommand} in: $(pwd)' && ${enhancedCommand}"`;
         } else {
           // Non-interactive commands - execute and show output
           // For MCP commands and other quick commands, we need to see the output

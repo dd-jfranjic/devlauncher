@@ -67,7 +67,7 @@ const TopBar: React.FC = () => {
 
   const executeClaudeCommand = async (claudeArgs: string = '') => {
     // Open Windows Terminal in dev-launcher folder and run claude command
-    const devLauncherPath = 'C:\\Users\\jfran\\Documents\\dev-launcher';
+    const devLauncherPath = 'C:/Users/jfran/Documents/dev-launcher';
     const claudeCommand = claudeArgs ? `claude ${claudeArgs}` : 'claude';
     
     // Use wt.exe to open terminal and execute the command
@@ -83,14 +83,14 @@ const TopBar: React.FC = () => {
   const openTerminal = () => {
     // Open Windows Terminal in the current working directory
     const currentPath = window.location.hostname === 'localhost' 
-      ? 'C:\\Users\\jfran\\Documents\\dev-launcher'  // Dev Launcher's own path
+      ? 'C:/Users/jfran/Documents/dev-launcher'  // Dev Launcher's own path
       : '.';
     executeCommand('wt.exe', ['-d', currentPath]);
   };
 
   const openVSCode = () => {
     // Open VS Code in the dev-launcher project folder
-    const projectPath = 'C:\\Users\\jfran\\Documents\\dev-launcher';
+    const projectPath = 'C:/Users/jfran/Documents/dev-launcher';
     executeCommand('code', [projectPath]);
   };
 

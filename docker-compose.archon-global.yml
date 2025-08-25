@@ -30,7 +30,9 @@ services:
       - ./archon/python/src:/app/src
       - ./archon/python/tests:/app/tests
     networks:
-      - archon-global
+      archon-global:
+        aliases:
+          - archon-server  # Alias for UI proxy to find the server
     restart: unless-stopped
     command: ["python", "-m", "uvicorn", "src.server.main:socket_app", "--host", "0.0.0.0", "--port", "8181", "--reload"]
     healthcheck:

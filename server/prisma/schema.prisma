@@ -8,24 +8,23 @@ datasource db {
 }
 
 model Project {
-  id            String          @id @default(uuid())
-  name          String
-  slug          String          @unique
-  type          String
-  location      String
-  paths         String          // JSON stored as string in SQLite
-  ports         String          // JSON stored as string in SQLite
-  dockerProject String
-  status        String          @default("stopped")
-  claudeCli     String          @default("{\"installed\":false}") // JSON
-  geminiCli     String          @default("{\"installed\":false}") // JSON
-  qwenCli       String          @default("{\"installed\":false}") // JSON
-  urlResolver   String?         // JSON
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-
-  tasks         Task[]
+  id             String            @id @default(uuid())
+  name           String
+  slug           String            @unique
+  type           String
+  location       String
+  paths          String
+  ports          String
+  dockerProject  String
+  status         String            @default("stopped")
+  claudeCli      String            @default("{\"installed\":false}")
+  geminiCli      String            @default("{\"installed\":false}")
+  qwenCli        String            @default("{\"installed\":false}")
+  urlResolver    String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
   ports_reserved PortReservation[]
+  tasks          Task[]
 
   @@index([slug])
   @@index([status])
@@ -38,7 +37,6 @@ model PortReservation {
   portName   String
   portNumber Int      @unique
   createdAt  DateTime @default(now())
-
   project    Project  @relation(fields: [slug], references: [slug], onDelete: Cascade)
 
   @@index([slug])
@@ -51,10 +49,9 @@ model Task {
   type        String
   status      String   @default("queued")
   logPath     String
-  result      String?  // JSON
+  result      String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   project     Project  @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
 
   @@index([projectSlug])
@@ -63,39 +60,39 @@ model Task {
 }
 
 model AuditLog {
-  id       String   @id @default(uuid())
-  ts       DateTime @default(now())
-  actor    String
-  action   String
-  params   String?  // JSON
-  result   String?  // JSON
-  
+  id     String   @id @default(uuid())
+  ts     DateTime @default(now())
+  actor  String
+  action String
+  params String?
+  result String?
+
   @@index([ts])
   @@index([actor])
   @@index([action])
 }
 
 model Settings {
-  id                   String   @id @default(uuid())
-  key                  String   @unique
-  value                String   // JSON
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([key])
 }
 
 model SystemService {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  type        String   // 'archon-global'
-  status      String   @default("stopped") // 'running', 'stopped', 'error', 'starting', 'stopping'
-  ports       String   // JSON: { ui: 4000, server: 4001, mcp: 4002, agents: 4003 }
-  config      String   // JSON: Supabase credentials, API keys
-  version     String?  // Archon version
-  lastError   String?  // Last error message if any
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String   @unique
+  type      String
+  status    String   @default("stopped")
+  ports     String
+  config    String
+  version   String?
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([name])
   @@index([type])

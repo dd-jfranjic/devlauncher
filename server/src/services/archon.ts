@@ -113,6 +113,12 @@ export class ArchonService {
       
       await this.updateStatus('archon-global', 'starting', null);
 
+      // Get current configuration from database
+      const currentConfig = await this.getGlobalStatus();
+      if (!currentConfig) {
+        throw new Error('Global Archon not initialized. Please configure first.');
+      }
+
       // Check if Archon source exists
       const archonPath = path.join(process.cwd(), 'archon');
       try {
@@ -129,14 +135,84 @@ export class ArchonService {
         throw new Error('Global Archon Docker configuration not found');
       }
 
-      // Start Docker containers
-      // Note: This will be implemented once we have the Docker compose file
-      // For now, we'll simulate the process
+      // Create data and logs directories
+      const dataDir = path.join(process.cwd(), '.devlauncher', 'archon', 'global', 'data');
+      const logsDir = path.join(process.cwd(), '.devlauncher', 'archon', 'global', 'logs');
       
-      logger.info('Global Archon containers starting...');
+      try {
+        await fs.mkdir(dataDir, { recursive: true });
+        await fs.mkdir(logsDir, { recursive: true });
+        logger.info('Created Archon data and logs directories');
+      } catch (error) {
+        logger.warn('Failed to create directories:', error);
+      }
+
+      // Create .env.archon-global file with environment variables
+      const envContent = [
+        `GLOBAL_ARCHON_SUPABASE_URL=${currentConfig.config.supabaseUrl}`,
+        `GLOBAL_ARCHON_SUPABASE_KEY=${currentConfig.config.supabaseKey}`,
+        `GLOBAL_ARCHON_OPENAI_KEY=${currentConfig.config.openaiKey || ''}`,
+        `GLOBAL_ARCHON_GEMINI_KEY=${currentConfig.config.geminiKey || ''}`,
+        `GLOBAL_ARCHON_LOG_LEVEL=INFO`
+      ].join('\n');
+
+      const envFilePath = path.join(process.cwd(), '.env.archon-global');
+      await fs.writeFile(envFilePath, envContent);
       
-      // Simulate container startup time
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      logger.info('Created .env.archon-global file with configuration');
+      logger.info('Environment variables:', {
+        GLOBAL_ARCHON_SUPABASE_URL: currentConfig.config.supabaseUrl,
+        GLOBAL_ARCHON_SUPABASE_KEY: currentConfig.config.supabaseKey ? '[SET]' : '[NOT SET]',
+        GLOBAL_ARCHON_OPENAI_KEY: currentConfig.config.openaiKey ? '[SET]' : '[NOT SET]'
+      });
+
+      // Start Docker containers using docker-compose
+      logger.info('Starting Docker containers with docker-compose...');
+      
+      const { spawn } = await import('child_process');
+      
+      const dockerCompose = spawn('docker', [
+        'compose', 
+        '-f', 'docker-compose.archon-global.yml', 
+        '--env-file', '.env.archon-global',
+        'up', '-d'
+      ], {
+        cwd: process.cwd(),
+        stdio: 'pipe',
+        shell: process.platform === 'win32'
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      dockerCompose.stdout?.on('data', (data) => {
+        stdout += data.toString();
+        logger.info('Docker compose stdout:', data.toString().trim());
+      });
+
+      dockerCompose.stderr?.on('data', (data) => {
+        stderr += data.toString();
+        logger.info('Docker compose stderr:', data.toString().trim());
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        dockerCompose.on('close', (code) => {
+          if (code === 0) {
+            logger.info('Docker containers started successfully');
+            resolve();
+          } else {
+            logger.error(`Docker compose exited with code ${code}`);
+            logger.error('Docker compose stdout:', stdout);
+            logger.error('Docker compose stderr:', stderr);
+            reject(new Error(`Docker compose failed with exit code ${code}. Check logs for details.`));
+          }
+        });
+
+        dockerCompose.on('error', (error) => {
+          logger.error('Docker compose spawn error:', error);
+          reject(error);
+        });
+      });
       
       await this.updateStatus('archon-global', 'running', null);
       
@@ -157,13 +233,53 @@ export class ArchonService {
       
       await this.updateStatus('archon-global', 'stopping', null);
 
-      // Stop Docker containers
-      // Note: This will be implemented once we have the Docker compose file
+      // Stop Docker containers using docker-compose
+      logger.info('Stopping Docker containers with docker-compose...');
       
-      logger.info('Global Archon containers stopping...');
+      const { spawn } = await import('child_process');
       
-      // Simulate container stop time
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const dockerCompose = spawn('docker', [
+        'compose', 
+        '-f', 'docker-compose.archon-global.yml', 
+        '--env-file', '.env.archon-global',
+        'down'
+      ], {
+        cwd: process.cwd(),
+        stdio: 'pipe',
+        shell: process.platform === 'win32'
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      dockerCompose.stdout?.on('data', (data) => {
+        stdout += data.toString();
+        logger.info('Docker compose stdout:', data.toString().trim());
+      });
+
+      dockerCompose.stderr?.on('data', (data) => {
+        stderr += data.toString();
+        logger.info('Docker compose stderr:', data.toString().trim());
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        dockerCompose.on('close', (code) => {
+          if (code === 0) {
+            logger.info('Docker containers stopped successfully');
+            resolve();
+          } else {
+            logger.error(`Docker compose down exited with code ${code}`);
+            logger.error('Docker compose stdout:', stdout);
+            logger.error('Docker compose stderr:', stderr);
+            reject(new Error(`Docker compose down failed with exit code ${code}. Check logs for details.`));
+          }
+        });
+
+        dockerCompose.on('error', (error) => {
+          logger.error('Docker compose spawn error:', error);
+          reject(error);
+        });
+      });
       
       await this.updateStatus('archon-global', 'stopped', null);
       
@@ -222,7 +338,7 @@ export class ArchonService {
     services: Record<string, string>;
   }> {
     try {
-      const services = ['archon-server', 'archon-mcp', 'archon-agents', 'archon-ui'];
+      const services = ['server', 'mcp', 'agents', 'ui'];
       const serviceStatus: Record<string, string> = {};
       
       for (const service of services) {
@@ -289,7 +405,7 @@ export class ArchonService {
    */
   async getLogs(lines: number = 100): Promise<string[]> {
     try {
-      const services = ['archon-server', 'archon-mcp', 'archon-agents', 'archon-ui'];
+      const services = ['server', 'mcp', 'agents', 'ui'];
       const logs: string[] = [];
 
       for (const service of services) {

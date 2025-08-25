@@ -15,10 +15,13 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.archon-global
 
 # Database
 prisma/dev.db
 prisma/dev.db-journal
+server/prisma/devlauncher.db
+server/prisma/devlauncher.db-journal
 *.sqlite
 
 # Logs

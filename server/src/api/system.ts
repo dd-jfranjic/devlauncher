@@ -41,9 +41,13 @@ systemRouter.post('/execute', validateBody(executeSchema), async (req: Request, 
         ? `start "" "${command}" ${args.map((arg: any) => `"${arg}"`).join(' ')}`
         : `start "" "${command}"`;
       
-      exec(fullCommand, { shell: true }, (error: any) => {
+      logger.info('Executing Windows Terminal command:', { fullCommand });
+      
+      exec(fullCommand, { shell: true }, (error: any, stdout: any, stderr: any) => {
         if (error) {
-          logger.warn('Command execution warning:', error);
+          logger.warn('Command execution warning:', { error: error.message, stdout, stderr });
+        } else {
+          logger.info('Command executed successfully');
         }
       });
     } else {
@@ -282,6 +286,37 @@ systemRouter.get('/archon/health', async (_req: Request, res: Response, next: Ne
         health,
         service: status,
         timestamp: new Date().toISOString()
+      },
+      error: null,
+      meta: {
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /system/archon/reset - Reset Archon status to stopped (for debugging)
+systemRouter.post('/archon/reset', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    logger.info('Resetting global Archon status to stopped');
+    
+    await prisma.systemService.update({
+      where: { name: 'archon-global' },
+      data: {
+        status: 'stopped',
+        lastError: null,
+        updatedAt: new Date()
+      }
+    });
+    
+    const status = await archonService.getGlobalStatus();
+    
+    res.json({
+      data: {
+        message: 'Global Archon status reset to stopped',
+        service: status
       },
       error: null,
       meta: {

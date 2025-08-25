@@ -400,7 +400,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project, onRefresh, o
     } else if (project.type === 'external-import') {
       // For external-import projects like fiskal-ai, show key service URLs
       if (project.ports?.frontend) {
-        links.push({ label: 'Frontend', url: `http://localhost:${project.ports.frontend}`, desc: 'React App' });
+        links.push({ label: 'Frontend', url: `http://172.27.151.100:${project.ports.frontend}`, desc: 'React App' });
       }
       if (project.ports?.backend) {
         links.push({ label: 'API', url: `http://localhost:${project.ports.backend}`, desc: 'Backend API' });
