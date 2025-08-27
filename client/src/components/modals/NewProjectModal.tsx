@@ -10,7 +10,7 @@ const NewProjectModal: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
-    type: 'blank' as 'blank' | 'nextjs' | 'wordpress',
+    type: 'blank' as 'blank' | 'nextjs' | 'wordpress' | 'php-saas',
     location: 'wsl' as 'windows' | 'wsl',
     autoStart: true,
     setupClaude: false,
@@ -181,7 +181,7 @@ const NewProjectModal: React.FC = () => {
           {/* Project Type */}
           <div>
             <label className="block text-sm font-medium mb-2">Project Type</label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, type: 'blank' }))}
@@ -219,6 +219,19 @@ const NewProjectModal: React.FC = () => {
               >
                 <span className="text-2xl mb-2 block">📝</span>
                 <span className="text-sm font-medium">WordPress</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, type: 'php-saas' }))}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  formData.type === 'php-saas' 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-neutral-700 hover:border-neutral-600'
+                }`}
+              >
+                <span className="text-2xl mb-2 block">🚀</span>
+                <span className="text-sm font-medium">PHP-SaaS</span>
               </button>
             </div>
           </div>

@@ -22,7 +22,7 @@ export interface IconProps {
 export interface NewProjectFormData {
   name: string
   slug: string
-  template: 'blank' | 'nextjs' | 'wordpress'
+  template: 'blank' | 'nextjs' | 'wordpress' | 'php-saas'
   location: 'windows' | 'wsl'
   path: string
 }
@@ -95,7 +95,7 @@ export interface AppSettings {
   notifications: boolean
   dockerPath?: string
   defaultLocation: 'windows' | 'wsl'
-  defaultTemplate: 'blank' | 'nextjs' | 'wordpress'
+  defaultTemplate: 'blank' | 'nextjs' | 'wordpress' | 'php-saas'
   closeToTray: boolean
   launchOnStartup: boolean
 }

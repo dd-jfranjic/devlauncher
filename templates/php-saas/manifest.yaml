@@ -1,0 +1,85 @@
+name: php-saas
+type: php-saas
+description: Complete PHP-SaaS starter kit with Laravel, Inertia.js, React/Vue, Stripe billing, and multi-tenancy
+version: "1.0.0"
+
+variables:
+  - name: PROJECT_NAME
+    type: string
+    default: "{{NAME}}"
+    description: "Project name for PHP-SaaS"
+    required: false
+  - name: DESCRIPTION
+    type: string
+    default: "A new SaaS application built with PHP-SaaS"
+    description: "Project description"
+    required: false
+  - name: APP_KEY
+    type: string
+    default: "base64:{{RANDOM_KEY}}"
+    description: "Laravel application key"
+    required: false
+  - name: DB_NAME
+    type: string
+    default: "{{SLUG}}_db"
+    description: "Database name"
+    required: false
+  - name: DB_USER
+    type: string
+    default: "{{SLUG}}_user"
+    description: "Database user"
+    required: false
+  - name: DB_PASSWORD
+    type: string
+    default: "secret123"
+    description: "Database password"
+    required: false
+
+ports:
+  app:
+    default: 8080
+    description: "Main application port"
+  db:
+    default: 3306
+    description: "MySQL database port"
+  redis:
+    default: 6379
+    description: "Redis cache port"
+  mailhog:
+    default: 8025
+    description: "MailHog web interface"
+
+locations:
+  wsl:
+    files:
+      - "README.md"
+      - ".env"
+      - ".gitignore"
+      - "docker-compose.wsl.yml"
+      - "Dockerfile"
+      - "nginx.conf"
+      - "postCreate.sh"
+    compose: "docker-compose.wsl.yml"
+    runtime:
+      - "docker"
+  windows:
+    files:
+      - "README.md"
+      - ".env"
+      - ".gitignore"
+      - "docker-compose.windows.yml"
+      - "Dockerfile"
+      - "nginx.conf"
+      - "postCreate.sh"
+    compose: "docker-compose.windows.yml"
+    runtime:
+      - "docker"
+
+hooks:
+  postCreate:
+    - "git init"
+    - "bash postCreate.sh '{{PATHS.HOST}}' '{{SLUG}}'"
+  postUp:
+    - "docker exec {{SLUG}}-app composer install"
+    - "docker exec {{SLUG}}-app php artisan key:generate"
+    - "docker exec {{SLUG}}-app php artisan migrate"

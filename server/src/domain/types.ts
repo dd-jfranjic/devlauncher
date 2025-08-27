@@ -1,4 +1,4 @@
-export type ProjectType = 'blank' | 'nextjs' | 'wordpress' | 'external-import';
+export type ProjectType = 'blank' | 'nextjs' | 'wordpress' | 'php-saas' | 'external-import';
 
 export type ProjectLocation = 'windows' | 'wsl';
 
@@ -13,6 +13,7 @@ export const ProjectTypeValues = {
   BLANK: 'blank' as ProjectType,
   NEXTJS: 'nextjs' as ProjectType,
   WORDPRESS: 'wordpress' as ProjectType,
+  PHP_SAAS: 'php-saas' as ProjectType,
   EXTERNAL_IMPORT: 'external-import' as ProjectType
 };
 
