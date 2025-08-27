@@ -4,12 +4,10 @@ import { spawn } from 'child_process';
 import { validateBody } from '../middleware/validation';
 import { createLogger } from '../utils/logger';
 import { HttpError } from '../middleware/error-handler';
-import { ArchonService, ArchonConfig } from '../services/archon';
 import { PrismaClient } from '@prisma/client';
 
 const logger = createLogger('system-api');
 const prisma = new PrismaClient();
-const archonService = new ArchonService(prisma);
 
 export const systemRouter = Router();
 
@@ -94,235 +92,66 @@ systemRouter.get('/platform', (_req: Request, res: Response) => {
   });
 });
 
-// ========== ARCHON API ENDPOINTS ==========
-
-const archonConfigSchema = z.object({
-  supabaseUrl: z.string().url().optional(),
-  supabaseKey: z.string().min(10).optional(),
-  openaiKey: z.string().startsWith('sk-').optional(),
-  geminiKey: z.string().optional()
+// POST /system/jina/token - Update Jina MCP token
+const jinaTokenSchema = z.object({
+  token: z.string().startsWith('jina_').min(20)
 });
 
-// GET /system/archon/status - Get global Archon status
-systemRouter.get('/archon/status', async (_req: Request, res: Response, next: NextFunction) => {
+systemRouter.post('/jina/token', validateBody(jinaTokenSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    logger.info('Getting global Archon status');
+    const { token } = req.body;
     
-    const status = await archonService.getGlobalStatus();
-    const health = await archonService.getHealthStatus();
-    const isRunning = await archonService.isGlobalArchonRunning();
+    logger.info('Updating Jina MCP token');
     
-    res.json({
-      data: {
-        service: status,
-        health,
-        isRunning
-      },
-      error: null,
-      meta: {
-        timestamp: new Date().toISOString()
-      }
+    // Use spawn to execute Windows command for Jina MCP token update
+    const { spawn } = require('child_process');
+    
+    const updateCommand = `claude mcp remove jina && claude mcp add jina --env JINA_API_KEY="${token}" -- npx jina-mcp-tools`;
+    
+    const child = spawn('cmd.exe', [
+      '/c',
+      updateCommand
+    ], {
+      stdio: ['ignore', 'pipe', 'pipe']
     });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /system/archon/init - Initialize global Archon with configuration
-systemRouter.post('/archon/init', validateBody(archonConfigSchema), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    logger.info('Initializing global Archon');
     
-    const config = req.body as ArchonConfig;
+    let stdout = '';
+    let stderr = '';
     
-    // Validate configuration
-    const validation = archonService.validateConfig(config);
-    if (!validation.valid) {
-      throw new HttpError(400, 'ValidationError', 'Invalid Archon configuration', { errors: validation.errors });
-    }
-    
-    const service = await archonService.initializeGlobalArchon(config);
-    
-    res.json({
-      data: service,
-      error: null,
-      meta: {
-        timestamp: new Date().toISOString()
-      }
+    child.stdout?.on('data', (data: Buffer) => {
+      stdout += data.toString();
     });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /system/archon/start - Start global Archon services
-systemRouter.post('/archon/start', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    logger.info('Starting global Archon services');
     
-    const currentStatus = await archonService.getGlobalStatus();
-    if (!currentStatus) {
-      throw new HttpError(400, 'ConfigurationError', 'Global Archon not initialized. Please configure first.');
-    }
-    
-    if (currentStatus.status === 'running') {
-      throw new HttpError(400, 'ServiceError', 'Global Archon is already running');
-    }
-    
-    await archonService.startGlobalArchon();
-    
-    res.json({
-      data: {
-        message: 'Global Archon services started successfully',
-        status: 'running'
-      },
-      error: null,
-      meta: {
-        timestamp: new Date().toISOString()
-      }
+    child.stderr?.on('data', (data: Buffer) => {
+      stderr += data.toString();
     });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /system/archon/stop - Stop global Archon services
-systemRouter.post('/archon/stop', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    logger.info('Stopping global Archon services');
     
-    const currentStatus = await archonService.getGlobalStatus();
-    if (!currentStatus) {
-      throw new HttpError(404, 'NotFound', 'Global Archon not found');
-    }
-    
-    if (currentStatus.status === 'stopped') {
-      throw new HttpError(400, 'ServiceError', 'Global Archon is already stopped');
-    }
-    
-    await archonService.stopGlobalArchon();
-    
-    res.json({
-      data: {
-        message: 'Global Archon services stopped successfully',
-        status: 'stopped'
-      },
-      error: null,
-      meta: {
-        timestamp: new Date().toISOString()
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /system/archon/config - Update global Archon configuration
-systemRouter.post('/archon/config', validateBody(archonConfigSchema), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    logger.info('Updating global Archon configuration');
-    
-    const config = req.body as Partial<ArchonConfig>;
-    
-    // Validate configuration
-    const validation = archonService.validateConfig(config);
-    if (!validation.valid) {
-      throw new HttpError(400, 'ValidationError', 'Invalid Archon configuration', { errors: validation.errors });
-    }
-    
-    await archonService.updateGlobalConfig(config);
-    
-    const updatedStatus = await archonService.getGlobalStatus();
-    
-    res.json({
-      data: {
-        message: 'Global Archon configuration updated successfully',
-        service: updatedStatus
-      },
-      error: null,
-      meta: {
-        timestamp: new Date().toISOString()
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET /system/archon/logs - Get global Archon logs
-systemRouter.get('/archon/logs', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const lines = parseInt(req.query.lines as string) || 100;
-    
-    logger.info(`Getting global Archon logs (${lines} lines)`);
-    
-    const logs = await archonService.getLogs(lines);
-    
-    res.json({
-      data: {
-        logs,
-        lines: logs.length
-      },
-      error: null,
-      meta: {
-        timestamp: new Date().toISOString()
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET /system/archon/health - Get detailed Archon health status
-systemRouter.get('/archon/health', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    logger.info('Getting global Archon health status');
-    
-    const health = await archonService.getHealthStatus();
-    const status = await archonService.getGlobalStatus();
-    
-    res.json({
-      data: {
-        health,
-        service: status,
-        timestamp: new Date().toISOString()
-      },
-      error: null,
-      meta: {
-        timestamp: new Date().toISOString()
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /system/archon/reset - Reset Archon status to stopped (for debugging)
-systemRouter.post('/archon/reset', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    logger.info('Resetting global Archon status to stopped');
-    
-    await prisma.systemService.update({
-      where: { name: 'archon-global' },
-      data: {
-        status: 'stopped',
-        lastError: null,
-        updatedAt: new Date()
+    child.on('close', (code) => {
+      if (code === 0) {
+        logger.info('Jina MCP token updated successfully');
+        res.json({
+          data: {
+            message: 'Jina MCP token updated successfully',
+            success: true
+          },
+          error: null,
+          meta: {
+            timestamp: new Date().toISOString()
+          }
+        });
+      } else {
+        logger.error('Jina MCP token update failed', { code, stdout, stderr });
+        res.status(500).json({
+          data: null,
+          error: 'Failed to update Jina MCP token',
+          meta: {
+            timestamp: new Date().toISOString(),
+            details: { code, stdout, stderr }
+          }
+        });
       }
     });
     
-    const status = await archonService.getGlobalStatus();
-    
-    res.json({
-      data: {
-        message: 'Global Archon status reset to stopped',
-        service: status
-      },
-      error: null,
-      meta: {
-        timestamp: new Date().toISOString()
-      }
-    });
   } catch (error) {
     next(error);
   }

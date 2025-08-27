@@ -28,7 +28,8 @@ import {
   Database,
   Mail,
   Settings2,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Bot
 } from 'lucide-react';
 
 interface ProjectOverviewProps {
@@ -49,6 +50,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project, onRefresh, o
   const [updatingClaude, setUpdatingClaude] = useState(false);
   const [updatingGemini, setUpdatingGemini] = useState(false);
   const [updatingQwen, setUpdatingQwen] = useState(false);
+  const [installingBmad, setInstallingBmad] = useState(false);
 
   // Auto-check CLI status when component loads
   useEffect(() => {
@@ -377,6 +379,24 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project, onRefresh, o
     }
   };
 
+  const handleInstallBmad = async () => {
+    setInstallingBmad(true);
+    onAction(true);
+    try {
+      // Open terminal and run BMAD-METHOD installation
+      await openTerminal(project.slug, 'npx bmad-method install');
+      showToast({ 
+        type: 'success', 
+        message: 'BMAD-METHOD installation started! Check terminal for progress.' 
+      });
+    } catch (error) {
+      showToast({ type: 'error', message: 'Failed to start BMAD-METHOD installation' });
+    } finally {
+      setInstallingBmad(false);
+      onAction(false);
+    }
+  };
+
   const getQuickLinks = () => {
     const links = [];
     
@@ -541,7 +561,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project, onRefresh, o
       {/* Quick Actions */}
       <section className="card">
         <h3 className="text-lg font-medium mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <button
             onClick={() => handleOpenTerminal()}
             className="p-4 card-glass hover:bg-white/[0.04] rounded-xl transition-all duration-200 flex flex-col items-center gap-2 hover-lift hover-glow"
@@ -570,6 +590,21 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project, onRefresh, o
             <Code2 className="w-6 h-6 text-blue-400" />
             <span className="text-sm font-medium">Editor</span>
             <span className="text-xs text-neutral-400 text-center">Open in VS Code/Cursor</span>
+          </button>
+
+          <button
+            onClick={handleInstallBmad}
+            disabled={installingBmad}
+            className="p-4 card-glass hover:bg-white/[0.04] rounded-xl transition-all duration-200 flex flex-col items-center gap-2 hover-lift hover-glow"
+            title="Install BMAD-METHOD AI-driven development framework"
+          >
+            <Bot className="w-6 h-6 text-orange-400" />
+            <span className="text-sm font-medium">
+              {installingBmad ? 'Installing...' : 'BMAD AI'}
+            </span>
+            <span className="text-xs text-neutral-400 text-center">
+              {installingBmad ? 'Setting up framework' : 'AI Agile Development'}
+            </span>
           </button>
           
           <button
@@ -643,7 +678,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project, onRefresh, o
             </p>
             {!isClaudeInstalled() && (
               <button
-                onClick={handleInstallClaude}
+                onClick={() => handleInstallClaude()}
                 disabled={installingClaude}
                 className="btn-primary btn-sm flex items-center gap-2 mt-2"
               >
@@ -754,7 +789,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project, onRefresh, o
             </p>
             {!isGeminiInstalled() && (
               <button
-                onClick={handleInstallGemini}
+                onClick={() => handleInstallGemini()}
                 disabled={installingGemini}
                 className="btn-primary btn-sm flex items-center gap-2 mt-2"
               >
@@ -851,7 +886,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project, onRefresh, o
             </p>
             {!isQwenInstalled() && (
               <button
-                onClick={handleInstallQwen}
+                onClick={() => handleInstallQwen()}
                 disabled={installingQwen}
                 className="btn-primary btn-sm flex items-center gap-2 mt-2"
               >

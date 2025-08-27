@@ -18,11 +18,13 @@ locations:
       - "README.md"
       - ".gitignore"
       - "src/.gitkeep"
+    compose: "docker-compose.yml"
   windows:
     files:
       - "README.md"
       - ".gitignore"
       - "src/.gitkeep"
+    compose: "docker-compose.yml"
 
 hooks:
   postCreate:

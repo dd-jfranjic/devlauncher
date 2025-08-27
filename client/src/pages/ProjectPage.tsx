@@ -18,7 +18,6 @@ import DockerTab from '../components/DockerTab';
 import McpTab from '../components/McpTab';
 import LogsTab from '../components/LogsTab';
 import ProjectSettings from '../components/ProjectSettings';
-import ArchonTab from '../components/ArchonTab';
 import { 
   ArrowPathIcon,
   PlayIcon,
@@ -154,7 +153,6 @@ const ProjectPage: React.FC = () => {
     { id: 'overview', label: 'Overview' },
     { id: 'docker', label: 'Docker' },
     { id: 'mcp', label: 'MCP' },
-    { id: 'archon', label: '🧠 Archon' },
     { id: 'logs', label: 'Logs' },
     { id: 'settings', label: 'Settings' }
   ];
@@ -320,12 +318,6 @@ const ProjectPage: React.FC = () => {
         )}
         {activeTab === 'mcp' && (
           <McpTab 
-            project={project} 
-            onRefresh={loadProject}
-          />
-        )}
-        {activeTab === 'archon' && (
-          <ArchonTab 
             project={project} 
             onRefresh={loadProject}
           />

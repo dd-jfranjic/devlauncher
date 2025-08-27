@@ -215,6 +215,10 @@ export class DockerService {
       if (options.location === ProjectLocationValues.WSL) {
         // WSL paths are already in Unix format
         composeFile = `${options.projectPath}/${composeFileName}`;
+        
+        // For WSL, check if location-specific file exists, fallback to generic
+        // We can't use fs.existsSync for WSL paths from Windows, so we'll let the command fail and retry
+        // The fallback will be handled in the command execution
       } else {
         composeFile = path.join(options.projectPath, composeFileName);
         
@@ -266,7 +270,69 @@ export class DockerService {
         if (code === 0) {
           resolve(stdout);
         } else {
-          reject(new Error(`Docker command failed with code ${code}: ${stderr}`));
+          // Check if error is due to missing compose file and we haven't tried fallback yet
+          if (stderr.includes('no such file or directory') && stderr.includes(composeFileName) && 
+              composeFileName !== 'docker-compose.yml') {
+            logger.warn(`Location-specific compose file not found, retrying with generic docker-compose.yml`);
+            
+            // Retry with generic compose file
+            let fallbackComposeFile: string;
+            if (options.location === ProjectLocationValues.WSL) {
+              fallbackComposeFile = `${options.projectPath}/docker-compose.yml`;
+            } else {
+              fallbackComposeFile = path.join(options.projectPath, 'docker-compose.yml');
+            }
+            
+            // Update args with fallback file
+            let fallbackArgs = [
+              'compose',
+              '-f', fallbackComposeFile,
+              '-p', options.projectName,
+              ...args.slice(0) // Copy original args
+            ];
+            
+            // Execute fallback command
+            let fallbackCommand: string;
+            let fallbackFullArgs: string[];
+            
+            if (options.location === ProjectLocationValues.WSL) {
+              fallbackCommand = 'wsl.exe';
+              const dockerCommand = `cd ${options.projectPath} && docker ${fallbackArgs.join(' ')}`;
+              fallbackFullArgs = ['-d', 'Ubuntu', '-u', 'jfranjic', 'bash', '-c', dockerCommand];
+            } else {
+              fallbackCommand = 'docker';
+              fallbackFullArgs = fallbackArgs;
+            }
+            
+            logger.debug('Executing fallback Docker command:', { command: fallbackCommand, args: fallbackFullArgs });
+            
+            const fallbackProc = spawn(fallbackCommand, fallbackFullArgs, execOptions);
+            
+            let fallbackStdout = '';
+            let fallbackStderr = '';
+            
+            fallbackProc.stdout.on('data', (data: Buffer) => {
+              fallbackStdout += data.toString();
+            });
+            
+            fallbackProc.stderr.on('data', (data: Buffer) => {
+              fallbackStderr += data.toString();
+            });
+            
+            fallbackProc.on('close', (fallbackCode: number) => {
+              if (fallbackCode === 0) {
+                resolve(fallbackStdout);
+              } else {
+                reject(new Error(`Docker command failed with code ${fallbackCode}: ${fallbackStderr}`));
+              }
+            });
+            
+            fallbackProc.on('error', (error: Error) => {
+              reject(error);
+            });
+          } else {
+            reject(new Error(`Docker command failed with code ${code}: ${stderr}`));
+          }
         }
       });
 

@@ -808,7 +808,25 @@ projectRouter.post('/:slug/open/terminal', validateParams(z.object({ slug: slugS
           // Use --mcp-config to force reading local project MCP configuration
           let enhancedCommand = command;
           if (command.startsWith('claude') && !command.includes('--mcp-config')) {
-            enhancedCommand = `claude --mcp-config "${wslPath}/.mcp.json" ${command.substring(6)}`.trim();
+            // Ensure MCP config file exists before using it
+            const mcpConfigPath = `${wslPath}/.mcp.json`;
+            const defaultMcpConfig = JSON.stringify({
+              mcpServers: {},
+              globalShortcut: "CommandOrControl+Shift+Space",
+              mcpContext: "Use available MCP servers when relevant to the task",
+              commandHints: true
+            });
+            const ensureMcpCommand = `wsl.exe -d Ubuntu -u jfranjic bash -c "if [ ! -f '${mcpConfigPath}' ]; then echo '${defaultMcpConfig}' > '${mcpConfigPath}'; fi"`;
+            
+            try {
+              await execAsync(ensureMcpCommand);
+              // Successfully created/verified MCP config file
+              enhancedCommand = `claude --mcp-config "${wslPath}/.mcp.json" ${command.substring(6)}`.trim();
+            } catch (error) {
+              logger.warn(`Failed to create MCP config file: ${error}`);
+              // Continue without MCP config - don't add the flag
+              enhancedCommand = command;
+            }
           }
           wtCommand = `wt.exe -p Ubuntu -- wsl.exe -d Ubuntu -u jfranjic --cd "${wslPath}" bash -lic "cd '${wslPath}' && echo 'Running ${enhancedCommand} in: $(pwd)' && ${enhancedCommand}"`;
         } else {
@@ -1042,7 +1060,7 @@ projectRouter.post("/:slug/install/claude", validateParams(z.object({ slug: slug
       // For WSL projects, install Claude CLI in WSL
       // First check if already installed
       try {
-        const { stdout: checkInstall } = await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "which claude 2>/dev/null"`);
+        const { stdout: checkInstall } = await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "which claude 2>/dev/null"`);
         if (checkInstall && checkInstall.trim().length > 0) {
           logger.info('Claude CLI already installed in WSL at: ' + checkInstall.trim());
           
@@ -1050,7 +1068,7 @@ projectRouter.post("/:slug/install/claude", validateParams(z.object({ slug: slug
           if (reinstall) {
             logger.info('Attempting to update Claude CLI in WSL...');
             try {
-              await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "claude update"`, { timeout: 30000 });
+              await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "claude update"`, { timeout: 30000 });
               logger.info('Claude CLI updated successfully');
             } catch (updateError) {
               logger.warn('Could not update Claude CLI, may already be latest version');
@@ -1076,7 +1094,7 @@ projectRouter.post("/:slug/install/claude", validateParams(z.object({ slug: slug
           await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "npm config set prefix '~/.npm-global'"`);
           
           // Install Claude CLI globally for the user
-          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "npm install -g @anthropic/claude-cli"`, { timeout: 120000 });
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm install -g @anthropic/claude-cli"`, { timeout: 120000 });
           
           // Add to PATH in .bashrc if not already there
           await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "grep -q '.npm-global/bin' ~/.bashrc || echo 'export PATH=~/.npm-global/bin:\$PATH' >> ~/.bashrc"`);
@@ -1102,7 +1120,7 @@ projectRouter.post("/:slug/install/claude", validateParams(z.object({ slug: slug
     let version = 'unknown';
     try {
       const versionCommand = project.location === 'wsl' 
-        ? `wsl.exe -d Ubuntu -u jfranjic bash -c "claude --version"`
+        ? `wsl.exe -d Ubuntu -u jfranjic bash -l -c "claude --version"`
         : 'claude --version';
         
       const { stdout } = await execAsync(versionCommand);
@@ -1167,51 +1185,79 @@ projectRouter.post("/:slug/install/gemini", validateParams(z.object({ slug: slug
     const { promisify } = require('util');
     const execAsync = promisify(exec);
 
-    // Install or reinstall Gemini CLI via npm based on project location
-    try {
-      let installCommand: string;
-      let uninstallCommand: string;
-      
-      if (project.location === 'wsl') {
-        // For WSL projects, install Gemini CLI in WSL with user npm prefix
-        // Ensure npm is configured to use user directory
-        const setupNpm = `wsl.exe -d Ubuntu -u jfranjic bash -c "mkdir -p ~/.npm-global && npm config set prefix '~/.npm-global' && echo 'export PATH=~/.npm-global/bin:\\\$PATH' >> ~/.bashrc"`;
+    // Install or reinstall Gemini CLI based on project location
+    let installSkipped = false;
+    
+    if (project.location === 'wsl') {
+      // For WSL projects, install Gemini CLI in WSL
+      // First check if already installed
+      try {
+        const { stdout: checkInstall } = await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "which gemini 2>/dev/null"`);
+        if (checkInstall && checkInstall.trim().length > 0) {
+          logger.info('Gemini CLI already installed in WSL at: ' + checkInstall.trim());
+          
+          // If reinstall flag is set, try to update
+          if (reinstall) {
+            logger.info('Attempting to reinstall Gemini CLI in WSL...');
+            try {
+              // Uninstall first
+              await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm uninstall -g @google/gemini-cli"`, { timeout: 30000 });
+              // Then reinstall
+              await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm install -g @google/gemini-cli"`, { timeout: 120000 });
+              logger.info('Gemini CLI reinstalled successfully');
+            } catch (updateError) {
+              logger.warn('Could not reinstall Gemini CLI:', updateError);
+              throw new HttpError(500, 'InstallationError', 'Failed to reinstall Gemini CLI');
+            }
+          } else {
+            // Already installed, skip installation
+            installSkipped = true;
+            logger.info('Gemini CLI already installed, skipping installation');
+          }
+        } else {
+          // Not installed, need to install
+          logger.info('Gemini CLI not found in WSL, installing...');
+          throw new Error('Gemini CLI not installed');
+        }
+      } catch (e) {
+        // Not installed, need to install
+        logger.info('Installing Gemini CLI in WSL...');
         try {
-          await execAsync(setupNpm);
-        } catch (e) {
-          logger.debug('NPM setup warning:', e);
+          // Create .npm-global directory if it doesn't exist
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "mkdir -p ~/.npm-global"`);
+          
+          // Set npm prefix to user directory
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "npm config set prefix '~/.npm-global'"`);
+          
+          // Install Gemini CLI globally for the user
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm install -g @google/gemini-cli"`, { timeout: 120000 });
+          
+          // Add to PATH in .bashrc if not already there
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "grep -q '.npm-global/bin' ~/.bashrc || echo 'export PATH=~/.npm-global/bin:\$PATH' >> ~/.bashrc"`);
+          
+          logger.info('Gemini CLI installed successfully in WSL');
+        } catch (installError) {
+          logger.error('Failed to install Gemini CLI in WSL:', installError);
+          throw new HttpError(500, 'InstallationError', 'Failed to install Gemini CLI in WSL');
         }
-        
-        if (reinstall) {
-          logger.info('Reinstalling Gemini CLI in WSL...');
-          uninstallCommand = `wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm uninstall -g @google/gemini-cli"`;
-          try {
-            await execAsync(uninstallCommand);
-          } catch (e) {
-            // Ignore uninstall errors
-          }
-        }
-        installCommand = `wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm install -g @google/gemini-cli"`;
-        logger.info('Installing Gemini CLI in WSL environment with user npm prefix');
-      } else {
-        // For Windows projects, install normally
-        if (reinstall) {
-          logger.info('Reinstalling Gemini CLI in Windows...');
-          try {
-            await execAsync('npm uninstall -g @google/gemini-cli');
-          } catch (e) {
-            // Ignore uninstall errors
-          }
-        }
-        installCommand = 'npm install -g @google/gemini-cli';
-        logger.info('Installing Gemini CLI in Windows environment');
       }
-      
-      await execAsync(installCommand, { timeout: 60000 });
-      logger.info('Gemini CLI installed successfully');
-    } catch (installError) {
-      logger.error('Failed to install Gemini CLI:', installError);
-      throw new HttpError(500, "InstallError", "Failed to install Gemini CLI");
+    } else {
+      // For Windows projects, install normally
+      if (reinstall) {
+        logger.info('Reinstalling Gemini CLI in Windows...');
+        try {
+          await execAsync('npm uninstall -g @google/gemini-cli');
+        } catch (e) {
+          // Ignore uninstall errors
+        }
+      }
+      try {
+        await execAsync('npm install -g @google/gemini-cli', { timeout: 60000 });
+        logger.info('Gemini CLI installed successfully in Windows');
+      } catch (installError) {
+        logger.error('Failed to install Gemini CLI:', installError);
+        throw new HttpError(500, "InstallError", "Failed to install Gemini CLI");
+      }
     }
 
     // Try to get Gemini CLI version based on project location
@@ -1644,51 +1690,79 @@ projectRouter.post("/:slug/install/qwen", validateParams(z.object({ slug: slugSc
     const { promisify } = require('util');
     const execAsync = promisify(exec);
 
-    // Install or reinstall Qwen CLI via npm based on project location
-    try {
-      let installCommand: string;
-      let uninstallCommand: string;
-      
-      if (project.location === 'wsl') {
-        // For WSL projects, install Qwen CLI in WSL with user npm prefix
-        // Ensure npm is configured to use user directory
-        const setupNpm = `wsl.exe -d Ubuntu -u jfranjic bash -c "mkdir -p ~/.npm-global && npm config set prefix '~/.npm-global' && echo 'export PATH=~/.npm-global/bin:\\$PATH' >> ~/.bashrc"`;
+    // Install or reinstall Qwen CLI based on project location
+    let installSkipped = false;
+    
+    if (project.location === 'wsl') {
+      // For WSL projects, install Qwen CLI in WSL
+      // First check if already installed
+      try {
+        const { stdout: checkInstall } = await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "which qwen 2>/dev/null"`);
+        if (checkInstall && checkInstall.trim().length > 0) {
+          logger.info('Qwen CLI already installed in WSL at: ' + checkInstall.trim());
+          
+          // If reinstall flag is set, try to update
+          if (reinstall) {
+            logger.info('Attempting to reinstall Qwen CLI in WSL...');
+            try {
+              // Uninstall first
+              await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm uninstall -g @qwen-code/qwen-code"`, { timeout: 30000 });
+              // Then reinstall
+              await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm install -g @qwen-code/qwen-code"`, { timeout: 120000 });
+              logger.info('Qwen CLI reinstalled successfully');
+            } catch (updateError) {
+              logger.warn('Could not reinstall Qwen CLI:', updateError);
+              throw new HttpError(500, 'InstallationError', 'Failed to reinstall Qwen CLI');
+            }
+          } else {
+            // Already installed, skip installation
+            installSkipped = true;
+            logger.info('Qwen CLI already installed, skipping installation');
+          }
+        } else {
+          // Not installed, need to install
+          logger.info('Qwen CLI not found in WSL, installing...');
+          throw new Error('Qwen CLI not installed');
+        }
+      } catch (e) {
+        // Not installed, need to install
+        logger.info('Installing Qwen CLI in WSL...');
         try {
-          await execAsync(setupNpm);
-        } catch (e) {
-          logger.debug('NPM setup warning:', e);
+          // Create .npm-global directory if it doesn't exist
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "mkdir -p ~/.npm-global"`);
+          
+          // Set npm prefix to user directory
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "npm config set prefix '~/.npm-global'"`);
+          
+          // Install Qwen CLI globally for the user
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm install -g @qwen-code/qwen-code"`, { timeout: 120000 });
+          
+          // Add to PATH in .bashrc if not already there
+          await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -c "grep -q '.npm-global/bin' ~/.bashrc || echo 'export PATH=~/.npm-global/bin:\$PATH' >> ~/.bashrc"`);
+          
+          logger.info('Qwen CLI installed successfully in WSL');
+        } catch (installError) {
+          logger.error('Failed to install Qwen CLI in WSL:', installError);
+          throw new HttpError(500, 'InstallationError', 'Failed to install Qwen CLI in WSL');
         }
-        
-        if (reinstall) {
-          logger.info('Reinstalling Qwen CLI in WSL...');
-          uninstallCommand = `wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm uninstall -g @qwen-code/qwen-code"`;
-          try {
-            await execAsync(uninstallCommand);
-          } catch (e) {
-            // Ignore uninstall errors
-          }
-        }
-        installCommand = `wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm install -g @qwen-code/qwen-code"`;
-        logger.info('Installing Qwen CLI in WSL environment with user npm prefix');
-      } else {
-        // For Windows projects, install normally
-        if (reinstall) {
-          logger.info('Reinstalling Qwen CLI in Windows...');
-          try {
-            await execAsync('npm uninstall -g @qwen-code/qwen-code');
-          } catch (e) {
-            // Ignore uninstall errors
-          }
-        }
-        installCommand = 'npm install -g @qwen-code/qwen-code';
-        logger.info('Installing Qwen CLI in Windows environment');
       }
-      
-      await execAsync(installCommand, { timeout: 60000 });
-      logger.info('Qwen CLI installed successfully');
-    } catch (installError) {
-      logger.error('Failed to install Qwen CLI:', installError);
-      throw new HttpError(500, "InstallError", "Failed to install Qwen CLI");
+    } else {
+      // For Windows projects, install normally
+      if (reinstall) {
+        logger.info('Reinstalling Qwen CLI in Windows...');
+        try {
+          await execAsync('npm uninstall -g @qwen-code/qwen-code');
+        } catch (e) {
+          // Ignore uninstall errors
+        }
+      }
+      try {
+        await execAsync('npm install -g @qwen-code/qwen-code', { timeout: 60000 });
+        logger.info('Qwen CLI installed successfully in Windows');
+      } catch (installError) {
+        logger.error('Failed to install Qwen CLI:', installError);
+        throw new HttpError(500, "InstallError", "Failed to install Qwen CLI");
+      }
     }
 
     // Try to get Qwen CLI version based on project location

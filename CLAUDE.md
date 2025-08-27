@@ -375,12 +375,189 @@ Key commands available through Playwright MCP:
 - Template system
 - WebSocket connections for live updates
 
+## CLI Installation Fixes for WSL Projects (August 2025)
+
+### Problem
+The CLI installation endpoints for Gemini CLI and Qwen CLI in WSL projects were not properly checking if the CLI tools were already installed. This caused:
+1. Unnecessary reinstallation attempts even when CLIs were already working
+2. Long installation times on every click
+3. Frontend showing "Failed to install" errors even when backend succeeded
+4. Inconsistent behavior compared to Claude CLI installation
+
+### Root Cause
+The original implementation blindly attempted installation without checking if the CLI was already available via `which` command. It also used different logic patterns compared to the working Claude CLI implementation.
+
+### Solution Implemented
+Updated both Gemini CLI and Qwen CLI installation endpoints in `server/src/api/projects.ts` to follow the same pattern as Claude CLI:
+
+1. **Pre-Installation Check**: Use `wsl.exe -d Ubuntu -u jfranjic bash -l -c "which <cli> 2>/dev/null"` to check if CLI already exists
+2. **Skip Installation**: If CLI found and not reinstalling, skip installation and mark as installed
+3. **Proper Installation Flow**: Only install if CLI not found or explicitly reinstalling
+4. **Error Handling**: Proper error propagation with meaningful messages
+5. **Version Detection**: Attempt to get actual version numbers after installation
+
+### Fixed Implementation Pattern
+```javascript
+// Check if already installed
+try {
+  const { stdout: checkInstall } = await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "which <cli> 2>/dev/null"`);
+  if (checkInstall && checkInstall.trim().length > 0) {
+    logger.info('<CLI> already installed in WSL at: ' + checkInstall.trim());
+    
+    // If reinstall flag is set, try to update
+    if (reinstall) {
+      logger.info('Attempting to reinstall <CLI> in WSL...');
+      try {
+        // Uninstall first, then reinstall
+        await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm uninstall -g <package>"`, { timeout: 30000 });
+        await execAsync(`wsl.exe -d Ubuntu -u jfranjic bash -l -c "npm install -g <package>"`, { timeout: 120000 });
+        logger.info('<CLI> reinstalled successfully');
+      } catch (updateError) {
+        logger.warn('Could not reinstall <CLI>:', updateError);
+        throw new HttpError(500, 'InstallationError', 'Failed to reinstall <CLI>');
+      }
+    } else {
+      // Already installed, skip installation
+      installSkipped = true;
+      logger.info('<CLI> already installed, skipping installation');
+    }
+  } else {
+    throw new Error('<CLI> not installed');
+  }
+} catch (e) {
+  // Not installed, proceed with fresh installation
+  logger.info('Installing <CLI> in WSL...');
+  // ... installation logic
+}
+```
+
+### Files Modified
+- `server/src/api/projects.ts`: Fixed Gemini CLI and Qwen CLI installation endpoints
+- Applied same logic pattern as working Claude CLI implementation
+
+### Testing Results
+**Before Fix**:
+- ❌ Gemini CLI: Always showed "Failed to install" even when succeeded
+- ❌ Qwen CLI: Always showed "Failed to install" even when succeeded
+- ❌ Long wait times on every click
+- ❌ Frontend/backend inconsistency
+
+**After Fix**:
+- ✅ Gemini CLI: Shows "Version: 0.1.18" with Check/Reinstall buttons and command buttons (Gemini, Help, Search, Config)
+- ✅ Qwen CLI: Shows "Version: unknown" with Check/Reinstall buttons and command buttons (Qwen, Help, Version)
+- ✅ Fast response when already installed (skips installation)
+- ✅ Consistent behavior across all CLI tools
+- ✅ Proper frontend status updates
+
+### Key Learning
+Always implement consistent patterns across similar features. The Claude CLI implementation was working correctly and should have been used as the template for Gemini CLI and Qwen CLI from the beginning. The fix simply aligns all three CLI installations to use the same robust logic.
+
 ## Resources
 - [Anthropic Claude Code Docs](https://docs.anthropic.com/en/docs/claude-code)
 - [Docker Compose Reference](https://docs.docker.com/compose/)
 - [Electron Documentation](https://www.electronjs.org/docs)
 - [Prisma Documentation](https://www.prisma.io/docs)
 - [Playwright Documentation](https://playwright.dev/docs)
+
+## Critical Bug Fixes (August 2025)
+
+### CLI Install Button Failures - CRITICAL FIX
+
+**Problem**: CLI installation buttons were showing red "Failed to reinstall [CLI] CLI" errors even when installations were working correctly.
+
+**Root Cause**: React onClick handlers were incorrectly written as `onClick={handleInstallClaude}` instead of `onClick={() => handleInstallClaude()}`, which passed React SyntheticBaseEvent objects as parameters instead of expected boolean values.
+
+**Error**: `TypeError: Converting circular structure to JSON` when API client tried to serialize the event object.
+
+**Critical Fix in `client/src/components/ProjectOverview.tsx`**:
+```jsx
+// WRONG (CAUSES FAILURE):
+<button onClick={handleInstallClaude} disabled={installingClaude}>
+
+// CORRECT (WORKING):
+<button onClick={() => handleInstallClaude()} disabled={installingClaude}>
+```
+
+**Files Fixed**:
+- ProjectOverview.tsx:696 - Claude CLI Install button
+- ProjectOverview.tsx:721 - Gemini CLI Install button  
+- ProjectOverview.tsx:750 - Qwen CLI Install button
+
+**RULE**: Always use arrow functions for onClick handlers when calling functions with optional parameters.
+
+### MCP Configuration File Missing - CRITICAL FIX
+
+**Problem**: Claude CLI commands failed with "Invalid MCP configuration: MCP config file not found: /home/jfranjic/dev-projects/[project]/.mcp.json"
+
+**Root Cause**: Projects automatically added `--mcp-config` flag to Claude commands but the configuration file was never created.
+
+**Critical Fix in `server/src/api/projects.ts:811-829`**:
+```javascript
+// Ensure MCP config file exists before using it
+const mcpConfigPath = `${wslPath}/.mcp.json`;
+const defaultMcpConfig = JSON.stringify({
+  mcpServers: {},
+  globalShortcut: "CommandOrControl+Shift+Space",
+  mcpContext: "Use available MCP servers when relevant to the task",
+  commandHints: true
+});
+const ensureMcpCommand = `wsl.exe -d Ubuntu -u jfranjic bash -c "if [ ! -f '${mcpConfigPath}' ]; then echo '${defaultMcpConfig}' > '${mcpConfigPath}'; fi"`;
+
+try {
+  await execAsync(ensureMcpCommand);
+  enhancedCommand = `claude --mcp-config "${wslPath}/.mcp.json" ${command.substring(6)}`.trim();
+} catch (error) {
+  logger.warn(`Failed to create MCP config file: ${error}`);
+  enhancedCommand = command; // Continue without MCP config
+}
+```
+
+### Docker Compose File Missing for Blank Projects - CRITICAL FIX
+
+**Problem**: New blank projects failed to start with "no such file or directory: docker-compose.wsl.yml"
+
+**Root Cause**: 
+1. Docker service expected location-specific files (`docker-compose.wsl.yml`) 
+2. Blank template only had generic `docker-compose.yml`
+3. Template manifest didn't specify compose file
+
+**Critical Fixes**:
+
+1. **Docker Service Fallback Logic** (`server/src/services/docker-service.ts:273-333`):
+```javascript
+// Added fallback logic to retry with docker-compose.yml if location-specific file fails
+if (stderr.includes('no such file or directory') && stderr.includes(composeFileName) && 
+    composeFileName !== 'docker-compose.yml') {
+  logger.warn(`Location-specific compose file not found, retrying with generic docker-compose.yml`);
+  // ... retry logic with fallback file
+}
+```
+
+2. **Template Manifest Update** (`templates/blank/manifest.yaml:21,27`):
+```yaml
+locations:
+  wsl:
+    files:
+      - "README.md"
+      - ".gitignore" 
+      - "src/.gitkeep"
+    compose: "docker-compose.yml"  # ADDED
+  windows:
+    files:
+      - "README.md"
+      - ".gitignore"
+      - "src/.gitkeep"
+    compose: "docker-compose.yml"  # ADDED
+```
+
+3. **Template Variable Fix** (`templates/blank/docker-compose.yml`):
+```yaml
+# WRONG:
+container_name: {{projectSlug}}-workspace
+
+# CORRECT:
+container_name: {{SLUG}}-workspace
+```
 
 ## Claude CLI Button Integration Solution
 

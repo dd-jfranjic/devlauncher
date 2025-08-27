@@ -620,7 +620,6 @@ npx prisma migrate dev --name reset
 ## 🎯 Roadmap
 
 ### Upcoming Features (v0.2.0)
-- **🧠 Archon AI Integration** - Global AI command center for cross-project knowledge sharing
 - **👥 Team Collaboration** - Multi-user project sharing and real-time collaboration
 - **☁️ Cloud Deployment** - One-click deploy to AWS, Azure, GCP with container orchestration
 - **🔌 Plugin System** - Custom project templates, MCP server extensions, and workflow automation
